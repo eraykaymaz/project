@@ -92,14 +92,13 @@ export function createDepot({ui,onDepotLoaded,normBrand}={}){
         const k=(brNorm+'||'+nm).toLocaleLowerCase(TR).replace(/\s+/g,' ').trim();
         if(!k||seen.has(k))continue;seen.add(k);
         const ag=depotAgg(it.code);
-
-        // ✅ İSTENEN: Aide ürün kodunu (Stok Kodu) da taşı
+        // ✅ Aide eşleşmeyende ürün kodunu da taşıyoruz
         out.push({
           _type:'depo',
           _bn:brNorm,
           "Marka":brandLabelByNorm.get(brNorm)||brNorm,
           "Depo Ürün Adı":nm,
-          "Aide Ürün Kodu":it.code,     // ✅ yeni
+          "Aide Ürün Kodu":it.code,           // ✅ NEW
           _dnum:ag?.num??0
         })
       }
