@@ -42,6 +42,17 @@ th.hdrTight .hTxt{letter-spacing:-.02em;font-size:12px}
 th.tightCol,td.tightCol{padding-left:4px!important;padding-right:4px!important}
 td.eanCell{white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important}
 td.eanCell .cellTxt{white-space:nowrap!important}
+
+/* ✅ EŞLEŞMEYENLER: içerik kısaltma yok, wrap yok, kolonlar içeriğe göre daralsın */
+#t2{table-layout:auto!important;width:max-content!important;min-width:100%!important}
+#t2 th,#t2 td{
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+
+/* dar kolonların hücreleri: mümkün olduğunca dar, ama içerik tam görünsün */
+#t2 td.tightCol,#t2 th.tightCol{width:1%!important}
 `;
   document.head.appendChild(st)
 }
@@ -57,7 +68,19 @@ const sched=()=>{_raf&&cancelAnimationFrame(_raf);_raf=requestAnimationFrame(adj
 const firstEl=td=>td?.querySelector('.cellTxt,.nm,input,button,select,div')||null;
 
 function enforceSticky(){
-  document.querySelectorAll('.tableWrap').forEach(w=>{w.style.overflow='visible';w.style.overflowX='visible';w.style.overflowY='visible'});
+  document.querySelectorAll('.tableWrap').forEach(w=>{
+    // ✅ t2'nin bulunduğu wrap: yatay scroll serbest (kısaltma yok)
+    if(w.querySelector('#t2')){
+      w.style.overflowX='auto';
+      w.style.overflowY='auto';
+      w.style.overflow='auto';
+      return;
+    }
+    // diğerleri: mevcut davranış
+    w.style.overflow='visible';
+    w.style.overflowX='visible';
+    w.style.overflowY='visible';
+  });
   document.documentElement.style.setProperty('--theadTop','0px')
 }
 function fitHeader(tableId){
@@ -166,7 +189,7 @@ export function createRenderer({ui}={}){
     else{
       sec&&(sec.style.display='');
 
-      // ✅ İSTENEN: T-Soft Ürün Kodu (T-Soft Ürün Adı'nın SOLU) + Aide Ürün Kodu (Aide Ürün Adı'nın YANI)
+      // ✅ T-Soft Ürün Kodu (T-Soft Ürün Adı'nın SOLU) + Aide Ürün Kodu (Aide Ürün Adı'nın SOLU)
       const UCOLS=[
         "Sıra",
         "Marka",
@@ -177,12 +200,17 @@ export function createRenderer({ui}={}){
         "Aide Ürün Kodu",
         "Aide Ürün Adı"
       ];
-      const W2=[6,10,10,18,10,18,10,18];
+
+      // ✅ Kolon daraltma: table-layout:auto yapıldığı için yüzdeler sadece "hint"
+      const W2=[1,1,1,22,1,22,1,22];
 
       const head2=UCOLS.map(c=>{
-        // Bölücü: T-Soft ve Aide bloklarını soldan ayır
-        const sep=(c==="T-Soft Ürün Kodu"||c==="Aide Ürün Kodu")?' sepL':'';
-        return `<th class="${sep.trim()}" title="${esc(c)}"><span class="hTxt">${fmtHdr(c)}</span></th>`
+        // ✅ İSTENEN: Marka ile Compel Ürün Kodu arasına da separator
+        // Ayrıca T-Soft ve Aide blokları için mevcut separatorlar
+        const sep=(c==="Compel Ürün Kodu"||c==="T-Soft Ürün Kodu"||c==="Aide Ürün Kodu")?' sepL':'';
+        // dar kolonlar
+        const tightCol=(c==="Sıra"||c==="Marka"||c==="Compel Ürün Kodu"||c==="T-Soft Ürün Kodu"||c==="Aide Ürün Kodu")?' tightCol':'';
+        return `<th class="${(sep+tightCol).trim()}" title="${esc(c)}"><span class="hTxt">${fmtHdr(c)}</span></th>`
       }).join('');
 
       const body2=U.map((r,i)=>{
@@ -215,10 +243,11 @@ export function createRenderer({ui}={}){
         const aide=aNm?`<div class="tagFlex" title="${esc(aNm)}"><span class="cellTxt tagLeft${aPulse?' namePulse':''}">${esc(aNm)}</span><span class="tagRight">${esc(aTag)}</span></div>`:`<span class="cellTxt">—</span>`;
 
         return `<tr id="u_${i}">
-          <td class="seqCell" title="${esc(seq)}"><span class="cellTxt">${esc(seq)}</span></td>
-          <td title="${esc(brand)}"><span class="cellTxt">${esc(brand)}</span></td>
+          <td class="seqCell tightCol" title="${esc(seq)}"><span class="cellTxt">${esc(seq)}</span></td>
+          <td class="tightCol" title="${esc(brand)}"><span class="cellTxt">${esc(brand)}</span></td>
 
-          <td class="tightCol" title="${esc(cCode)}">${compelCode}</td>
+          <!-- ✅ İSTENEN: Marka | Compel Ürün Kodu arasına separator -->
+          <td class="tightCol sepL" title="${esc(cCode)}">${compelCode}</td>
           <td class="left nameCell">${compel}</td>
 
           <td class="tightCol sepL" title="${esc(tCode)}">${tsoftCode}</td>
