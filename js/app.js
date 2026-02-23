@@ -305,8 +305,18 @@ function buildUnifiedUnmatched({Uc,Ut,Ud}){
   for(const r of(Uc||[])){
     const bDisp=String(r["Marka"]||"").trim(),bNorm=normBrand(bDisp||r._bn||"");
     const grp=getGrp(bNorm,bDisp);if(!grp)continue;
+
     const nm=String(r["Ürün Adı (Compel)"]||"").trim();if(!nm)continue;
-    grp.c.push({name:nm,link:r._clink||"",stokRaw:r._s1raw??""})
+
+    // ✅ İSTENEN: Compel ürün kodunu da taşı
+    const code=String(r["Ürün Kodu (Compel)"]||"").trim();
+
+    grp.c.push({
+      name:nm,
+      code, // ✅ yeni
+      link:r._clink||"",
+      stokRaw:r._s1raw??""
+    })
   }
   for(const r of(Ut||[])){
     const bDisp=String(r["Marka"]||"").trim(),bNorm=normBrand(r._bn||bDisp||"");
@@ -339,8 +349,25 @@ function buildUnifiedUnmatched({Uc,Ut,Ud}){
     for(let i=0;i<n;i++){
       const c=grp.c[i]||null,t=grp.t[i]||null,d=grp.d[i]||null;
       const aideName=d?d.name:"";
-      out.push({"Sıra":"","Marka":grp.brandDisp||grp.brNorm,"Compel Ürün Adı":c?c.name:"","T-Soft Ürün Adı":t?t.name:"","Aide Ürün Adı":aideName,"Depo Ürün Adı":aideName,
-        _clink:c?.link||"",_seo:t?.link||"",_cstokraw:c?.stokRaw??"",_taktif:t?t.aktif:null,_tstok:t?(Number.isFinite(t.stokNum)?t.stokNum:0):null,_dstok:d?(Number.isFinite(d.num)?d.num:0):null})
+      out.push({
+        "Sıra":"",
+        "Marka":grp.brandDisp||grp.brNorm,
+
+        // ✅ İSTENEN: yeni alan
+        "Compel Ürün Kodu":c?String(c.code||""):"",
+
+        "Compel Ürün Adı":c?c.name:"",
+        "T-Soft Ürün Adı":t?t.name:"",
+        "Aide Ürün Adı":aideName,
+        "Depo Ürün Adı":aideName,
+
+        _clink:c?.link||"",
+        _seo:t?.link||"",
+        _cstokraw:c?.stokRaw??"",
+        _taktif:t?t.aktif:null,
+        _tstok:t?(Number.isFinite(t.stokNum)?t.stokNum:0):null,
+        _dstok:d?(Number.isFinite(d.num)?d.num:0):null
+      })
     }
   }
   for(let i=0;i<out.length;i++)out[i]["Sıra"]=String(i+1);
