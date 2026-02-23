@@ -92,7 +92,16 @@ export function createDepot({ui,onDepotLoaded,normBrand}={}){
         const k=(brNorm+'||'+nm).toLocaleLowerCase(TR).replace(/\s+/g,' ').trim();
         if(!k||seen.has(k))continue;seen.add(k);
         const ag=depotAgg(it.code);
-        out.push({_type:'depo',_bn:brNorm,"Marka":brandLabelByNorm.get(brNorm)||brNorm,"Depo Ürün Adı":nm,_dnum:ag?.num??0})
+
+        // ✅ İSTENEN: Aide ürün kodunu (Stok Kodu) da taşı
+        out.push({
+          _type:'depo',
+          _bn:brNorm,
+          "Marka":brandLabelByNorm.get(brNorm)||brNorm,
+          "Depo Ürün Adı":nm,
+          "Aide Ürün Kodu":it.code,     // ✅ yeni
+          _dnum:ag?.num??0
+        })
       }
     }
     out.sort((a,b)=>{
