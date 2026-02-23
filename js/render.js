@@ -166,14 +166,23 @@ export function createRenderer({ui}={}){
     else{
       sec&&(sec.style.display='');
 
-      // ✅ İSTENEN: "Compel Ürün Kodu" sütunu eklendi (Compel Ürün Adı'nın SOLUNA)
-      const UCOLS=["Sıra","Marka","Compel Ürün Kodu","Compel Ürün Adı","T-Soft Ürün Adı","Aide Ürün Adı"];
-      const W2=[6,12,12,22,24,24];
+      // ✅ İSTENEN: T-Soft Ürün Kodu (T-Soft Ürün Adı'nın SOLU) + Aide Ürün Kodu (Aide Ürün Adı'nın YANI)
+      const UCOLS=[
+        "Sıra",
+        "Marka",
+        "Compel Ürün Kodu",
+        "Compel Ürün Adı",
+        "T-Soft Ürün Kodu",
+        "T-Soft Ürün Adı",
+        "Aide Ürün Kodu",
+        "Aide Ürün Adı"
+      ];
+      const W2=[6,10,10,18,10,18,10,18];
 
       const head2=UCOLS.map(c=>{
-        const sep=(c==="T-Soft Ürün Adı"||c==="Aide Ürün Adı")?' sepL':'';
-        const cls=(sep.trim())||'';
-        return `<th class="${cls}" title="${esc(c)}"><span class="hTxt">${fmtHdr(c)}</span></th>`
+        // Bölücü: T-Soft ve Aide bloklarını soldan ayır
+        const sep=(c==="T-Soft Ürün Kodu"||c==="Aide Ürün Kodu")?' sepL':'';
+        return `<th class="${sep.trim()}" title="${esc(c)}"><span class="hTxt">${fmtHdr(c)}</span></th>`
       }).join('');
 
       const body2=U.map((r,i)=>{
@@ -182,7 +191,10 @@ export function createRenderer({ui}={}){
         const cCode=(r["Compel Ürün Kodu"]??r["Ürün Kodu (Compel)"]??'').toString().trim();
         const cNm=r["Compel Ürün Adı"]??'',cLn=r._clink||'',cPulse=!!r._pulseC;
 
+        const tCode=(r["T-Soft Ürün Kodu"]??'').toString().trim();
         const tNm=r["T-Soft Ürün Adı"]??'',tLn=r._seo||'';
+
+        const aCode=(r["Aide Ürün Kodu"]??'').toString().trim();
         const aNm=r["Aide Ürün Adı"]??r["Depo Ürün Adı"]??'',aPulse=!!r._pulseD;
 
         const cNum=stockToNumber(r._cstokraw??'',{source:'compel'});
@@ -195,6 +207,9 @@ export function createRenderer({ui}={}){
         const aTag=aNm?(aNum<=0?'(Stok Yok)':`(Stok: ${fmtNum(aNum)})`):'';
 
         const compelCode=cCode?`<span class="cellTxt" title="${esc(cCode)}">${esc(cCode)}</span>`:`<span class="cellTxt">—</span>`;
+        const tsoftCode=tCode?`<span class="cellTxt" title="${esc(tCode)}">${esc(tCode)}</span>`:`<span class="cellTxt">—</span>`;
+        const aideCode=aCode?`<span class="cellTxt" title="${esc(aCode)}">${esc(aCode)}</span>`:`<span class="cellTxt">—</span>`;
+
         const compel=cNm?`<div class="tagFlex"><span class="tagLeft">${cellName(cNm,cLn,cPulse)}</span><span class="tagRight">${esc(cTag)}</span></div>`:`<span class="cellTxt">—</span>`;
         const tsoft=tNm?`<div class="tagFlex"><span class="tagLeft">${cellName(tNm,tLn,false)}</span><span class="tagRight">${esc(tTag)}</span></div>`:`<span class="cellTxt">—</span>`;
         const aide=aNm?`<div class="tagFlex" title="${esc(aNm)}"><span class="cellTxt tagLeft${aPulse?' namePulse':''}">${esc(aNm)}</span><span class="tagRight">${esc(aTag)}</span></div>`:`<span class="cellTxt">—</span>`;
@@ -202,10 +217,15 @@ export function createRenderer({ui}={}){
         return `<tr id="u_${i}">
           <td class="seqCell" title="${esc(seq)}"><span class="cellTxt">${esc(seq)}</span></td>
           <td title="${esc(brand)}"><span class="cellTxt">${esc(brand)}</span></td>
+
           <td class="tightCol" title="${esc(cCode)}">${compelCode}</td>
           <td class="left nameCell">${compel}</td>
-          <td class="left nameCell sepL">${tsoft}</td>
-          <td class="left sepL">${aide}</td>
+
+          <td class="tightCol sepL" title="${esc(tCode)}">${tsoftCode}</td>
+          <td class="left nameCell">${tsoft}</td>
+
+          <td class="tightCol sepL" title="${esc(aCode)}">${aideCode}</td>
+          <td class="left">${aide}</td>
         </tr>`
       }).join('');
 
