@@ -3,7 +3,13 @@ import { COLS } from './match.js';
 const $=id=>document.getElementById(id);
 const colGrp=w=>`<colgroup>${w.map(x=>`<col style="width:${x}%">`).join('')}</colgroup>`;
 
-const HDR1={"Sıra No":"Sıra","Marka":"Marka","Ürün Adı (Compel)":"Compel Ürün Adı","Ürün Adı (T-Soft)":"Tsoft Ürün Adı","Ürün Kodu (Compel)":"Compel Ürün Kodu","Ürün Kodu (T-Soft)":"T-Soft Ürün Kodu","Stok (Compel)":"Compel","Stok (Depo)":"Depo","Stok (T-Soft)":"T-Soft","Stok Durumu":"Stok Durumu","EAN (Compel)":"Compel EAN","EAN (T-Soft)":"T-Soft EAN","EAN Durumu":"EAN Durumu"};
+const HDR1={
+  "Sıra No":"Sıra","Marka":"Marka",
+  "Ürün Kodu (Compel)":"Compel Ürün Kodu","Ürün Adı (Compel)":"Compel Ürün Adı",
+  "Ürün Kodu (T-Soft)":"T-Soft Ürün Kodu","Ürün Adı (T-Soft)":"Tsoft Ürün Adı",
+  "Stok (Compel)":"Compel","Stok (Depo)":"Aide","Stok (T-Soft)":"T-Soft",
+  "EAN (Compel)":"Compel EAN","EAN (T-Soft)":"T-Soft EAN"
+};
 const disp=c=>HDR1[c]||c;
 const fmtHdr=s=>{s=(s??'').toString();const m=s.match(/^(.*?)(\s*\([^)]*\))\s*$/);return m?`<span class="hMain">${esc(m[1].trimEnd())}</span> <span class="hParen">${esc(m[2].trim())}</span>`:esc(s)};
 
@@ -18,15 +24,12 @@ function css(){
 .tagLeft{min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tagRight{flex:0 0 auto;text-align:right;white-space:nowrap;opacity:.92;font-weight:1100}
 .tagLeft .nm,.tagLeft .cellTxt{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* ✅ theme uyumu: sepL pembe/kırmızı tonu */
 .sepL{border-left:1px solid rgba(232,60,97,.28)!important;box-shadow:inset 1px 0 0 rgba(0,0,0,.35)}
 #listTitle,#unmatchedTitle{font-weight:1300!important;font-size:20px!important;letter-spacing:.02em}
 #t1 thead th .hTxt,#t2 thead th .hTxt{display:inline-block;transform-origin:left center}
 th.hdrThin{font-weight:700!important}
 th.hdrTight .hTxt{letter-spacing:-.02em;font-size:12px}
 #t1 thead th,#t2 thead th{position:sticky!important;top:var(--theadTop,0px)!important;z-index:120!important;background:#1b1b1b!important;box-shadow:0 1px 0 rgba(31,36,48,.9)}
-
-/* ✅ Eşleştir veya Stok Aç için: kontur + halo (td.flagBad zaten index.html'de var) */
 .warnHalo{
   text-shadow:
     -0.8px 0 #000,
@@ -36,6 +39,9 @@ th.hdrTight .hTxt{letter-spacing:-.02em;font-size:12px}
      0 0 2px var(--warn-halo-2, rgba(245,245,245,.20)),
      0 0 10px var(--warn-halo-1, rgba(245,245,245,.38));
 }
+th.tightCol,td.tightCol{padding-left:4px!important;padding-right:4px!important}
+td.eanCell{white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important}
+td.eanCell .cellTxt{white-space:nowrap!important}
 `;
   document.head.appendChild(st)
 }
@@ -54,7 +60,6 @@ function enforceSticky(){
   document.querySelectorAll('.tableWrap').forEach(w=>{w.style.overflow='visible';w.style.overflowX='visible';w.style.overflowY='visible'});
   document.documentElement.style.setProperty('--theadTop','0px')
 }
-
 function fitHeader(tableId){
   const t=$(tableId);if(!t)return;
   t.querySelectorAll('thead th').forEach(th=>{
@@ -64,10 +69,8 @@ function fitHeader(tableId){
     sp.style.transform=`scaleX(${s})`
   })
 }
-
 function adjust(){
   _raf=0;enforceSticky();fitHeader('t1');fitHeader('t2');
-
   const nameFit=tableId=>{
     const t=$(tableId);if(!t)return;
     const rows=t.querySelectorAll('tbody tr'),G=6;
@@ -94,47 +97,62 @@ const fmtNum=n=>{const x=Number(n);return Number.isFinite(x)?(Math.round(x)===x?
 
 export function createRenderer({ui}={}){
   return{render(R,Ux,depotReady){
-    const T1_SEP_LEFT=new Set(["Stok (Compel)","EAN (Compel)"]);
+    const T1_SEP_LEFT=new Set(["Ürün Kodu (Compel)","Ürün Kodu (T-Soft)","Stok (Compel)","EAN (Compel)"]);
     const tight=c=>(c==="Ürün Kodu (Compel)"||c==="Ürün Kodu (T-Soft)");
-    const W1=[4,8,14,14,7,7,6,6,6,6,8,8,6];
+    const NARROW_ONLY=new Set(["Sıra No","Marka","Ürün Kodu (Compel)","Ürün Kodu (T-Soft)"]);
+    const W1=[3,5,6,22,6,22,7,7,7,7,8];
 
     const head=COLS.map(c=>{
       const l=disp(c);
-      const cls=[T1_SEP_LEFT.has(c)?'sepL':'',tight(c)?'hdrThin hdrTight':''].filter(Boolean).join(' ');
+      const cls=[
+        T1_SEP_LEFT.has(c)?'sepL':'',
+        tight(c)?'hdrThin hdrTight':'',
+        NARROW_ONLY.has(c)?'tightCol':''
+      ].filter(Boolean).join(' ');
       return `<th class="${cls}" title="${esc(l)}"><span class="hTxt">${fmtHdr(l)}</span></th>`
     }).join('');
 
-    // ✅ "Stok (Compel)" = "Stokta Yok" olanları en alta at (stable)
-    const Rview = (R||[])
+    // ✅ Üst tablo sadece eşleşenleri gösterir
+    // Alfabetik: Marka > Compel Ürün Adı > Compel Ürün Kodu > T-Soft Ürün Adı (stabil)
+    const normS=s=>String(s??'').trim();
+    const cmpTR=(a,b)=>normS(a).localeCompare(normS(b),'tr',{sensitivity:'base'});
+    const Rview=(R||[])
+      .filter(r=>!!r?._m)
       .map((row,idx)=>({row,idx}))
-      .sort((a,b)=>{
-        const aBad = String(a.row?.["Stok (Compel)"]||'') === 'Stokta Yok';
-        const bBad = String(b.row?.["Stok (Compel)"]||'') === 'Stokta Yok';
-        if(aBad!==bBad) return aBad ? 1 : -1;
-        return a.idx - b.idx;
+      .sort((A,B)=>{
+        const a=A.row,b=B.row;
+        const ab=cmpTR(a?.["Marka"],b?.["Marka"]); if(ab) return ab;
+        const an=cmpTR(a?.["Ürün Adı (Compel)"],b?.["Ürün Adı (Compel)"]); if(an) return an;
+        const ac=cmpTR(a?.["Ürün Kodu (Compel)"],b?.["Ürün Kodu (Compel)"]); if(ac) return ac;
+        const tn=cmpTR(a?.["Ürün Adı (T-Soft)"],b?.["Ürün Adı (T-Soft)"]); if(tn) return tn;
+        return A.idx-B.idx;
       })
       .map(x=>x.row);
 
-    const body=(Rview||[]).map(r=>`<tr>${COLS.map((c,idx)=>{
-      const v=r[c]??'';
+    const body=(Rview||[]).map((r,rowIdx)=>`<tr>${COLS.map((c,idx)=>{
+      let v=r[c]??'';
+      if(c==="Sıra No") v=String(rowIdx+1);
 
-      if(c==="Ürün Adı (Compel)"){
-        return `<td class="left nameCell">${cellName(v,r._clink||'')}</td>`;
-      }
-
+      if(c==="Ürün Adı (Compel)")return `<td class="left nameCell">${cellName(v,r._clink||'')}</td>`;
       if(c==="Ürün Adı (T-Soft)"){
-        const hasMatch = !!r?._m;
-        const txt = (v??'').toString().trim();
-        if(!hasMatch || !txt){
-          // ✅ renk #ff3064 + kontur + halo
-          return `<td class="left nameCell" title="Eşleştir veya Stok Aç"><span class="nm warnHalo" style="color:var(--warn);font-weight:1200">Eşleştir veya Stok Aç</span></td>`;
-        }
+        const txt=(v??'').toString().trim();
         return `<td class="left nameCell">${cellName(txt,r._seo||'')}</td>`;
       }
 
-      const seq=idx===0,sd=c==="Stok Durumu",ed=c==="EAN Durumu",ean=(c==="EAN (Compel)"||c==="EAN (T-Soft)");
-      const bad=(sd&&String(v||'')==='Hatalı')||(ed&&String(v||'')==='Eşleşmedi');
-      const cls=[T1_SEP_LEFT.has(c)?'sepL':'',seq?'seqCell':'',sd||ed?'statusBold':'',ean?'eanCell':'',bad?'flagBad':''].filter(Boolean).join(' ');
+      const seq=idx===0;
+      const ean=(c==="EAN (Compel)"||c==="EAN (T-Soft)");
+      const eanBad=(c==="EAN (T-Soft)"&&r?._eanBad===true);
+      const stokBad=(c==="Stok (T-Soft)"&&r?._stokBad===true);
+      const bad=eanBad||stokBad;
+
+      const cls=[
+        T1_SEP_LEFT.has(c)?'sepL':'',
+        seq?'seqCell':'',
+        ean?'eanCell':'',
+        bad?'flagBad':'',
+        NARROW_ONLY.has(c)?'tightCol':''
+      ].filter(Boolean).join(' ');
+
       const title=(c==="Stok (Depo)"&&depotReady)?`${v} (Depo Toplam: ${r._draw??'0'})`:v;
       return `<td class="${cls}" title="${esc(title)}"><span class="cellTxt">${esc(v)}</span></td>`
     }).join('')}</tr>`).join('');
