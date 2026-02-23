@@ -293,6 +293,7 @@ function rebuildTsoftOkSupByBrand(){
     k&&set.add(k);a&&a!==k&&set.add(a)
   }
 }
+
 function buildUnifiedUnmatched({Uc,Ut,Ud}){
   const g=new Map(),getGrp=(brNorm,brandDisp)=>{
     const k=String(brNorm||"").trim();if(!k)return null;
@@ -302,34 +303,42 @@ function buildUnifiedUnmatched({Uc,Ut,Ud}){
     return grp
   };
 
+  // Compel unmatched
   for(const r of(Uc||[])){
     const bDisp=String(r["Marka"]||"").trim(),bNorm=normBrand(bDisp||r._bn||"");
     const grp=getGrp(bNorm,bDisp);if(!grp)continue;
 
     const nm=String(r["Ürün Adı (Compel)"]||"").trim();if(!nm)continue;
-
-    // ✅ İSTENEN: Compel ürün kodunu da taşı
     const code=String(r["Ürün Kodu (Compel)"]||"").trim();
 
-    grp.c.push({
-      name:nm,
-      code, // ✅ yeni
-      link:r._clink||"",
-      stokRaw:r._s1raw??""
-    })
+    grp.c.push({name:nm,code,link:r._clink||"",stokRaw:r._s1raw??""})
   }
+
+  // T-Soft unmatched (Aide ile kod eşleşmeyenler burada da var)
   for(const r of(Ut||[])){
     const bDisp=String(r["Marka"]||"").trim(),bNorm=normBrand(r._bn||bDisp||"");
     const grp=getGrp(bNorm,bDisp);if(!grp)continue;
+
     const nm=String(r["T-Soft Ürün Adı"]||"").trim();if(!nm)continue;
+
+    // ✅ İSTENEN: T-Soft ürün kodu (öncelik SUP, yoksa WS)
+    const code=String(r._sup||r._ws||"").trim();
+
     const stokRaw=String(r._stokraw??"").trim(),stokNum=stockToNumber(stokRaw,{source:"products"});
-    grp.t.push({name:nm,link:r._seo||"",aktif:r._aktif===true?true:r._aktif===false?false:null,stokNum})
+    grp.t.push({name:nm,code,link:r._seo||"",aktif:r._aktif===true?true:r._aktif===false?false:null,stokNum})
   }
+
+  // Aide unmatched (T-Soft ile kod eşleşmeyenler burada)
   for(const r of(Ud||[])){
     const bDisp=String(r["Marka"]||"").trim(),bNorm=normBrand(r._bn||bDisp||"");
     const grp=getGrp(bNorm,bDisp);if(!grp)continue;
+
     const nm=String(r["Depo Ürün Adı"]||"").trim();if(!nm)continue;
-    grp.d.push({name:nm,num:Number(r._dnum??0)})
+
+    // ✅ İSTENEN: Aide ürün kodu
+    const code=String(r["Aide Ürün Kodu"]||"").trim();
+
+    grp.d.push({name:nm,code,num:Number(r._dnum??0)})
   }
 
   const brandArr=[...g.values()].sort((a,b)=>String(a.brandDisp||"").localeCompare(String(b.brandDisp||""),"tr",{sensitivity:"base"}));
@@ -353,11 +362,15 @@ function buildUnifiedUnmatched({Uc,Ut,Ud}){
         "Sıra":"",
         "Marka":grp.brandDisp||grp.brNorm,
 
-        // ✅ İSTENEN: yeni alan
         "Compel Ürün Kodu":c?String(c.code||""):"",
-
         "Compel Ürün Adı":c?c.name:"",
+
+        // ✅ İSTENEN: T-Soft Ürün Kodu sütunu
+        "T-Soft Ürün Kodu":t?String(t.code||""):"",
         "T-Soft Ürün Adı":t?t.name:"",
+
+        // ✅ İSTENEN: Aide Ürün Kodu sütunu
+        "Aide Ürün Kodu":d?String(d.code||""):"",
         "Aide Ürün Adı":aideName,
         "Depo Ürün Adı":aideName,
 
@@ -373,6 +386,7 @@ function buildUnifiedUnmatched({Uc,Ut,Ud}){
   for(let i=0;i<out.length;i++)out[i]["Sıra"]=String(i+1);
   return out
 }
+
 function refresh(){
   rebuildTsoftOkSupByBrand();
   const {R,U,UT}=matcher.getResults();
