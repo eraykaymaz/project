@@ -43,15 +43,18 @@ th.tightCol,td.tightCol{padding-left:4px!important;padding-right:4px!important}
 td.eanCell{white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important}
 td.eanCell .cellTxt{white-space:nowrap!important}
 
-/* ✅ EŞLEŞMEYENLER: içerik kısaltma yok, wrap yok, kolonlar içeriğe göre daralsın */
-#t2{table-layout:auto!important;width:max-content!important;min-width:100%!important}
+/* ✅ EŞLEŞMEYENLER: yatay kaydırma/slide yok, taşma yok.
+   İçerik kısaltma yok, wrap yok. Sığmazsa JS scaleX ile sığdırır. */
+#t2{
+  table-layout:auto!important;
+  width:100%!important;
+  transform-origin:left top;
+}
 #t2 th,#t2 td{
   white-space:nowrap!important;
   overflow:visible!important;
   text-overflow:clip!important;
 }
-
-/* dar kolonların hücreleri: mümkün olduğunca dar, ama içerik tam görünsün */
 #t2 td.tightCol,#t2 th.tightCol{width:1%!important}
 `;
   document.head.appendChild(st)
@@ -69,20 +72,20 @@ const firstEl=td=>td?.querySelector('.cellTxt,.nm,input,button,select,div')||nul
 
 function enforceSticky(){
   document.querySelectorAll('.tableWrap').forEach(w=>{
-    // ✅ t2'nin bulunduğu wrap: yatay scroll serbest (kısaltma yok)
+    // ✅ Alttaki tablo: yatay kaydırma yok
     if(w.querySelector('#t2')){
-      w.style.overflowX='auto';
+      w.style.overflowX='hidden';
       w.style.overflowY='auto';
-      w.style.overflow='auto';
+      w.style.overflow='hidden auto';
       return;
     }
-    // diğerleri: mevcut davranış
     w.style.overflow='visible';
     w.style.overflowX='visible';
     w.style.overflowY='visible';
   });
   document.documentElement.style.setProperty('--theadTop','0px')
 }
+
 function fitHeader(tableId){
   const t=$(tableId);if(!t)return;
   t.querySelectorAll('thead th').forEach(th=>{
@@ -92,8 +95,41 @@ function fitHeader(tableId){
     sp.style.transform=`scaleX(${s})`
   })
 }
+
+// ✅ Yeni: tablo ekrana sığmıyorsa scaleX ile sığdır (yatay slide yok, taşma yok)
+function fitTableToWrap(tableId){
+  const t=$(tableId);
+  if(!t) return;
+  const wrap=t.closest('.tableWrap') || t.parentElement;
+  if(!wrap) return;
+
+  // reset
+  t.style.transform='scaleX(1)';
+
+  // ölç
+  const wrapW=wrap.clientWidth||0;
+  const tableW=t.scrollWidth||0;
+  if(wrapW<=0||tableW<=0) return;
+
+  const s=Math.min(1, wrapW / tableW);
+
+  // çok küçük oynamaları engelle
+  if(s < 0.999){
+    t.style.transform=`scaleX(${s})`;
+  }else{
+    t.style.transform='scaleX(1)';
+  }
+}
+
 function adjust(){
-  _raf=0;enforceSticky();fitHeader('t1');fitHeader('t2');
+  _raf=0;
+  enforceSticky();
+  fitHeader('t1');
+  fitHeader('t2');
+
+  // ✅ alttaki tabloyu ekrana sığdır
+  fitTableToWrap('t2');
+
   const nameFit=tableId=>{
     const t=$(tableId);if(!t)return;
     const rows=t.querySelectorAll('tbody tr'),G=6;
@@ -112,7 +148,9 @@ function adjust(){
       }
     }
   };
-  nameFit('t1');nameFit('t2');
+  nameFit('t1');
+  nameFit('t2');
+
   if(!_bound){_bound=true;addEventListener('resize',sched)}
 }
 
@@ -189,7 +227,6 @@ export function createRenderer({ui}={}){
     else{
       sec&&(sec.style.display='');
 
-      // ✅ T-Soft Ürün Kodu (T-Soft Ürün Adı'nın SOLU) + Aide Ürün Kodu (Aide Ürün Adı'nın SOLU)
       const UCOLS=[
         "Sıra",
         "Marka",
@@ -201,14 +238,12 @@ export function createRenderer({ui}={}){
         "Aide Ürün Adı"
       ];
 
-      // ✅ Kolon daraltma: table-layout:auto yapıldığı için yüzdeler sadece "hint"
+      // (yüzdeler sadece ipucu; auto layout + scaleX asıl işi yapıyor)
       const W2=[1,1,1,22,1,22,1,22];
 
       const head2=UCOLS.map(c=>{
-        // ✅ İSTENEN: Marka ile Compel Ürün Kodu arasına da separator
-        // Ayrıca T-Soft ve Aide blokları için mevcut separatorlar
+        // ✅ Separator: Marka|Compel Kodu arası + T-Soft ve Aide blokları
         const sep=(c==="Compel Ürün Kodu"||c==="T-Soft Ürün Kodu"||c==="Aide Ürün Kodu")?' sepL':'';
-        // dar kolonlar
         const tightCol=(c==="Sıra"||c==="Marka"||c==="Compel Ürün Kodu"||c==="T-Soft Ürün Kodu"||c==="Aide Ürün Kodu")?' tightCol':'';
         return `<th class="${(sep+tightCol).trim()}" title="${esc(c)}"><span class="hTxt">${fmtHdr(c)}</span></th>`
       }).join('');
@@ -246,7 +281,6 @@ export function createRenderer({ui}={}){
           <td class="seqCell tightCol" title="${esc(seq)}"><span class="cellTxt">${esc(seq)}</span></td>
           <td class="tightCol" title="${esc(brand)}"><span class="cellTxt">${esc(brand)}</span></td>
 
-          <!-- ✅ İSTENEN: Marka | Compel Ürün Kodu arasına separator -->
           <td class="tightCol sepL" title="${esc(cCode)}">${compelCode}</td>
           <td class="left nameCell">${compel}</td>
 
