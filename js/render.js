@@ -43,18 +43,22 @@ th.tightCol,td.tightCol{padding-left:4px!important;padding-right:4px!important}
 td.eanCell{white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important}
 td.eanCell .cellTxt{white-space:nowrap!important}
 
-/* ✅ EŞLEŞMEYENLER: yatay kaydırma/slide yok, taşma yok.
-   İçerik kısaltma yok, wrap yok. Sığmazsa JS scaleX ile sığdırır. */
-#t2{
-  table-layout:auto!important;
+/* ✅ SAYFAYA SIĞDIRMA:
+   - wrapper yatay taşma yapmasın
+   - tablolar %100 genişliği doldursun (kenarlardan kısa kalmasın)
+   - çok dar ekranda JS scaleX ile sığdırılır */
+.tableWrap{overflow-x:hidden!important}
+#t1,#t2{
   width:100%!important;
+  table-layout:fixed!important;
   transform-origin:left top;
 }
-#t2 th,#t2 td{
-  white-space:nowrap!important;
-  overflow:visible!important;
-  text-overflow:clip!important;
-}
+#t1 th,#t1 td,#t2 th,#t2 td{white-space:nowrap}
+
+/* name hücreleri: responsive genişleyip daralsın */
+#t1 td.nameCell,#t2 td.nameCell{min-width:0}
+
+/* t2 kod kolonlarını içerik kadar dar tutmaya yardımcı */
 #t2 td.tightCol,#t2 th.tightCol{width:1%!important}
 `;
   document.head.appendChild(st)
@@ -72,16 +76,9 @@ const firstEl=td=>td?.querySelector('.cellTxt,.nm,input,button,select,div')||nul
 
 function enforceSticky(){
   document.querySelectorAll('.tableWrap').forEach(w=>{
-    // ✅ Alttaki tablo: yatay kaydırma yok
-    if(w.querySelector('#t2')){
-      w.style.overflowX='hidden';
-      w.style.overflowY='auto';
-      w.style.overflow='hidden auto';
-      return;
-    }
-    w.style.overflow='visible';
-    w.style.overflowX='visible';
-    w.style.overflowY='visible';
+    w.style.overflowX='hidden';
+    w.style.overflowY='auto';
+    w.style.overflow='hidden auto';
   });
   document.documentElement.style.setProperty('--theadTop','0px')
 }
@@ -96,38 +93,40 @@ function fitHeader(tableId){
   })
 }
 
-// ✅ Yeni: tablo ekrana sığmıyorsa scaleX ile sığdır (yatay slide yok, taşma yok)
+// ✅ Eğer tablo hâlâ sığmıyorsa (çok dar ekran) scaleX ile sığdır
 function fitTableToWrap(tableId){
   const t=$(tableId);
   if(!t) return;
   const wrap=t.closest('.tableWrap') || t.parentElement;
   if(!wrap) return;
 
-  // reset
   t.style.transform='scaleX(1)';
 
-  // ölç
   const wrapW=wrap.clientWidth||0;
-  const tableW=t.scrollWidth||0;
-  if(wrapW<=0||tableW<=0) return;
+  if(wrapW<=0) return;
 
-  const s=Math.min(1, wrapW / tableW);
+  // fixed+100% iken scrollWidth ölçümü “tam” olmayabilir; doğal ölçüm için geçici klon kullan
+  const clone=t.cloneNode(true);
+  clone.style.visibility='hidden';
+  clone.style.position='absolute';
+  clone.style.left='-99999px';
+  clone.style.top='0';
+  clone.style.transform='scaleX(1)';
+  clone.style.width='auto';
+  clone.style.tableLayout='auto';
+  document.body.appendChild(clone);
+  const naturalW=clone.scrollWidth||clone.getBoundingClientRect().width||0;
+  clone.remove();
 
-  // çok küçük oynamaları engelle
-  if(s < 0.999){
-    t.style.transform=`scaleX(${s})`;
-  }else{
-    t.style.transform='scaleX(1)';
-  }
+  if(!naturalW) return;
+  const s=Math.min(1, wrapW / naturalW);
+  if(s<0.999) t.style.transform=`scaleX(${s})`;
 }
 
 function adjust(){
-  _raf=0;
-  enforceSticky();
-  fitHeader('t1');
-  fitHeader('t2');
-
-  // ✅ alttaki tabloyu ekrana sığdır
+  _raf=0;enforceSticky();
+  fitHeader('t1');fitHeader('t2');
+  fitTableToWrap('t1');
   fitTableToWrap('t2');
 
   const nameFit=tableId=>{
@@ -148,9 +147,7 @@ function adjust(){
       }
     }
   };
-  nameFit('t1');
-  nameFit('t2');
-
+  nameFit('t1');nameFit('t2');
   if(!_bound){_bound=true;addEventListener('resize',sched)}
 }
 
@@ -161,7 +158,10 @@ export function createRenderer({ui}={}){
     const T1_SEP_LEFT=new Set(["Ürün Kodu (Compel)","Ürün Kodu (T-Soft)","Stok (Compel)","EAN (Compel)"]);
     const tight=c=>(c==="Ürün Kodu (Compel)"||c==="Ürün Kodu (T-Soft)");
     const NARROW_ONLY=new Set(["Sıra No","Marka","Ürün Kodu (Compel)","Ürün Kodu (T-Soft)"]);
-    const W1=[3,5,6,22,6,22,7,7,7,7,8];
+
+    // ✅ t1 responsive: toplam 100
+    // (isim kolonları geniş; pencereye göre büyüyüp küçülür)
+    const W1=[4,8,10,20,10,20,8,8,8,7,7];
 
     const head=COLS.map(c=>{
       const l=disp(c);
@@ -173,8 +173,6 @@ export function createRenderer({ui}={}){
       return `<th class="${cls}" title="${esc(l)}"><span class="hTxt">${fmtHdr(l)}</span></th>`
     }).join('');
 
-    // ✅ Üst tablo sadece eşleşenleri gösterir
-    // Alfabetik: Marka > Compel Ürün Adı > Compel Ürün Kodu > T-Soft Ürün Adı (stabil)
     const normS=s=>String(s??'').trim();
     const cmpTR=(a,b)=>normS(a).localeCompare(normS(b),'tr',{sensitivity:'base'});
     const Rview=(R||[])
@@ -238,11 +236,10 @@ export function createRenderer({ui}={}){
         "Aide Ürün Adı"
       ];
 
-      // (yüzdeler sadece ipucu; auto layout + scaleX asıl işi yapıyor)
-      const W2=[1,1,1,22,1,22,1,22];
+      // ✅ t2 responsive: name kolonları büyüyüp küçülür (toplam 100)
+      const W2=[4,10,10,18,10,18,10,20];
 
       const head2=UCOLS.map(c=>{
-        // ✅ Separator: Marka|Compel Kodu arası + T-Soft ve Aide blokları
         const sep=(c==="Compel Ürün Kodu"||c==="T-Soft Ürün Kodu"||c==="Aide Ürün Kodu")?' sepL':'';
         const tightCol=(c==="Sıra"||c==="Marka"||c==="Compel Ürün Kodu"||c==="T-Soft Ürün Kodu"||c==="Aide Ürün Kodu")?' tightCol':'';
         return `<th class="${(sep+tightCol).trim()}" title="${esc(c)}"><span class="hTxt">${fmtHdr(c)}</span></th>`
@@ -251,6 +248,7 @@ export function createRenderer({ui}={}){
       const body2=U.map((r,i)=>{
         const seq=r["Sıra"]??String(i+1),brand=r["Marka"]??'';
 
+        // ✅ Kodlar artık app.js/depot.js tarafından dolduruluyor
         const cCode=(r["Compel Ürün Kodu"]??r["Ürün Kodu (Compel)"]??'').toString().trim();
         const cNm=r["Compel Ürün Adı"]??'',cLn=r._clink||'',cPulse=!!r._pulseC;
 
@@ -288,7 +286,7 @@ export function createRenderer({ui}={}){
           <td class="left nameCell">${tsoft}</td>
 
           <td class="tightCol sepL" title="${esc(aCode)}">${aideCode}</td>
-          <td class="left">${aide}</td>
+          <td class="left nameCell">${aide}</td>
         </tr>`
       }).join('');
 
