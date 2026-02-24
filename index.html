@@ -206,16 +206,12 @@ a:hover{text-decoration:underline}
   border:0;background:transparent;border-radius:0;
   overflow:visible;cursor:pointer;display:block;padding:0;
 }
-
-/* ✅ İSTENEN: %20 daha büyüt + ~1cm sola kaydır (konum aynı hissiyat) */
 .tsoftThumb img{
   width:100%;height:100%;
   object-fit:contain;display:block;
   transform:translateX(-38px) scale(1.35);
   transform-origin:center center;
 }
-
-/* ✅ hover'da hafif silik "Büyüt" yazısı (T-Soft) */
 .tsoftThumb{position:relative}
 .tsoftThumb::after{
   content:"Büyüt";
@@ -286,8 +282,6 @@ a:hover{text-decoration:underline}
   display:block;
   border-radius:6px;
 }
-
-/* ✅ hover'da hafif silik "Büyüt" yazısı (Aide) */
 #depoSpinWrap::after{
   content:"Büyüt";
   position:absolute;
@@ -348,6 +342,7 @@ a:hover{text-decoration:underline}
 <button id="supplierBtn" class="file" type="button" aria-expanded="false" title="Tedarikçi seç"><span class="fbtn" id="supplierLabel">1) Tedarikçi: Compel</span></button>
 <div class="ddMenu" id="supplierMenu" role="menu" aria-hidden="true">
 <button type="button" class="ddItem" id="supplierCompelItem">Compel</button>
+<button type="button" class="ddItem" id="supplierAllItem">Tüm Markalar</button>
 <button type="button" class="ddItem" id="supplierAkalinItem">Akalın</button>
 <button type="button" class="ddItem" id="supplierAddBtn">Tedarikçi ekle</button>
 <div class="ddEmpty"></div></div></div>
@@ -376,11 +371,27 @@ a:hover{text-decoration:underline}
 </div></div>
 
 <div class="rowSep" aria-hidden="true"></div><div class="brandList" id="brandList"></div></aside>
+
 <section class="maincol">
-<section class="panel results"><div class="tableWrap"><table id="t1"></table></div></section>
-<section class="panel unmatched" id="unmatchedSection" style="display:none">
-<div class="rowSep" aria-hidden="true"></div><div class="listTitleBar" id="unmatchedTitle">Eşleşmeyen Ürünler Listesi</div>
-<div class="tableWrap"><table id="t2"></table></div></section></section></main>
+  <section class="panel results"><div class="tableWrap"><table id="t1"></table></div></section>
+
+  <!-- Eski unmatched (Compel modu) -->
+  <section class="panel unmatched" id="unmatchedSection" style="display:none">
+    <div class="rowSep" aria-hidden="true"></div><div class="listTitleBar" id="unmatchedTitle">Eşleşmeyen Ürünler Listesi</div>
+    <div class="tableWrap"><table id="t2"></table></div>
+  </section>
+
+  <!-- ✅ Yeni split unmatched (Tüm Markalar modu) -->
+  <section class="panel unmatched" id="unmatchedSplitSection" style="display:none">
+    <div class="rowSep" aria-hidden="true"></div>
+    <div class="listTitleBar" id="unmatchedSplitTitle">Eşleşmeyen Ürünler</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="tableWrap"><table id="t2L"></table></div>
+      <div class="tableWrap"><table id="t2R"></table></div>
+    </div>
+  </section>
+</section></main>
 
 <div class="imgOverlay" id="imgOverlay" aria-hidden="true"><div class="lbWrap"><img id="imgOverlayImg" alt="Önizleme"></div></div>
 
@@ -435,7 +446,6 @@ a:hover{text-decoration:underline}
     </label>
   </div>
 
-  <!-- ✅ ES Kİ HAL: img id depoSpin (konum/transform aynı) -->
   <div id="depoSpinWrap" tabindex="0" role="button" aria-label="Büyüt" title="Büyüt">
     <img id="depoSpin" src="https://www.sescibaba.com/Data/EditorFiles/urun_resim/Aidestek.webp" alt="">
   </div>
