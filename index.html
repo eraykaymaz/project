@@ -1,365 +1,229 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="icon" href="https://www.sescibaba.com/Data/EditorFiles/urun_resim/G.png"><title>Tedarick - G</title>
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="https://www.sescibaba.com/Data/EditorFiles/urun_resim/G.png">
+<title>Tedarick - G</title>
+
 <style>
 :root{
-  color-scheme:dark;
-  --popW:min(560px,92vw);
-  --popMaxH:calc(100vh - 24px);
-  --popGap:10px;
-  --popM:12px;
-  --guideDur:1200ms;
-
-  --bg-main:#1E1E1E;
-  --bg-panel:#252525;
-  --bg-elevated:#2D2D2D;
-  --bg-hover:#343434;
-
-  --border:#3A3A3A;
-  --border-2:#4A4A4A;
-
-  --text:#E6E6E6;
-  --text-2:#A0A0A0;
-
-  --accent:#e83c61;
-  --accent-hover:#ff5579;
-  --accent-soft:rgba(232,60,97,.12);
-  --accent-glow:rgba(232,60,97,.55);
-
-  --link:#ff6f95;
-
-  --ok:#86efac;
-  --bad:#ff4d79;
-
-  --warn:#ff3064;
-
-  --unk:#fcd34d;
-
-  --overlay:rgba(0,0,0,.55);
-  --overlay-strong:rgba(0,0,0,.78);
-  --shadow:rgba(0,0,0,.55);
-
-  --thead-bg:#1b1b1b;
-
-  --warn-halo-1:rgba(245,245,245,.38);
-  --warn-halo-2:rgba(245,245,245,.20);
-
-  --stroke:#000;
+color-scheme:dark;
+--popW:min(560px,92vw);
+--popMaxH:calc(100vh - 24px);
+--popGap:10px;
+--popM:12px;
+--guideDur:1200ms;
+--bg-main:#1E1E1E;
+--bg-panel:#252525;
+--bg-elevated:#2D2D2D;
+--bg-hover:#343434;
+--border:#3A3A3A;
+--border-2:#4A4A4A;
+--text:#E6E6E6;
+--text-2:#A0A0A0;
+--accent:#e83c61;
+--accent-hover:#ff5579;
+--accent-soft:rgba(232,60,97,.12);
+--accent-glow:rgba(232,60,97,.55);
+--link:#ff6f95;
+--ok:#86efac;
+--bad:#ff4d79;
+--warn:#ff3064;
+--unk:#fcd34d;
+--overlay:rgba(0,0,0,.55);
+--overlay-strong:rgba(0,0,0,.78);
+--shadow:rgba(0,0,0,.55);
+--thead-bg:#1b1b1b;
+--warn-halo-1:rgba(245,245,245,.38);
+--warn-halo-2:rgba(245,245,245,.20);
+--stroke:#000;
 }
+
+/* ---------- GLOBAL ---------- */
 
 html,body{min-height:100%;overflow-x:hidden}
 body{
-  margin:0;min-height:100vh;display:flex;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-  background:var(--bg-main);color:var(--text);
-  font-size:15px;overscroll-behavior-x:none;touch-action:pan-y;overflow-y:auto
+margin:0;display:flex;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+background:var(--bg-main);color:var(--text);font-size:15px;
 }
-.layout{flex:1;min-height:100vh;display:flex;flex-direction:column;overflow:visible}
-.siteHeader{padding:10px 8px 0;background:var(--bg-main)}
-.siteTitle{text-align:center;font-size:26px;font-weight:1300;letter-spacing:5.2px;padding:6px 0 8px}
+.layout{flex:1;display:flex;flex-direction:column}
+.siteHeader{padding:10px 8px 0}
+.siteTitle{text-align:center;font-size:26px;font-weight:1300;letter-spacing:5px;padding:6px 0 8px}
 
-aside{border-bottom:1px solid var(--border);padding:8px;display:flex;flex-direction:column;gap:8px;background:var(--bg-main);overflow:visible}
-.topRow{width:100%;display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;justify-content:flex-start}
-.rowSep{height:1px;background:var(--border);opacity:.7;margin:6px 2px 2px;border-radius:999px}
-.listTitleBar{text-align:center;font-weight:1300;font-size:18px;letter-spacing:.085em;opacity:.95;line-height:1.25;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 6px}
-section.maincol{display:flex;flex-direction:column;gap:8px;background:var(--bg-main);padding:0 8px 10px}
-.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;justify-content:flex-start;flex:1 1 auto}
+/* ---------- CONTROLS ---------- */
+
+aside{border-bottom:1px solid var(--border);padding:8px;display:flex;flex-direction:column;gap:8px}
+.topRow{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex:1}
 
 button,.file{
-  background:var(--bg-elevated);
-  color:var(--text);
-  border:1px solid var(--border-2);
-  border-radius:10px;
-  font-weight:900;font-size:14px;height:36px;
-  box-sizing:border-box;display:flex;align-items:center;justify-content:center;line-height:1
+background:var(--bg-elevated);
+color:var(--text);
+border:1px solid var(--border-2);
+border-radius:10px;
+font-weight:900;
+font-size:14px;
+height:36px;
+display:flex;
+align-items:center;
+justify-content:center;
 }
 button{padding:0 12px;cursor:pointer}
-button:hover,.file:hover{background:var(--bg-hover);border-color:var(--border-2)}
+button:hover,.file:hover{background:var(--bg-hover)}
 button:disabled{opacity:.55;cursor:not-allowed}
-button:disabled:hover{background:var(--bg-elevated);border-color:var(--border-2)}
+
+/* ---------- GUIDE PULSE ---------- */
 
 @keyframes guidePulse{
-  0%{box-shadow:0 0 0 rgba(232,60,97,0);border-color:var(--border-2)}
-  55%{box-shadow:0 0 18px var(--accent-glow);border-color:var(--accent-hover)}
-  100%{box-shadow:0 0 0 rgba(232,60,97,0);border-color:var(--border-2)}
+0%{box-shadow:0 0 0 transparent}
+60%{box-shadow:0 0 18px var(--accent-glow)}
+100%{box-shadow:0 0 0 transparent}
 }
-.guidePulse{animation:guidePulse var(--guideDur,1200ms) ease-in-out infinite}
+.guidePulse{animation:guidePulse var(--guideDur) ease-in-out infinite}
 
-.file{position:relative;justify-content:flex-start;gap:8px;padding:0 10px;user-select:none;cursor:pointer;max-width:520px;align-self:stretch}
-.file input{display:none}
-.fbtn{white-space:nowrap}
-.fname{font-weight:800;opacity:.92;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px}
-.fname.hide{display:none!important}
+/* ---------- BRAND LIST ---------- */
 
-.ddWrap{position:relative;display:inline-flex}
-.ddMenu{
-  display:none;position:absolute;left:0;top:calc(100% + 6px);
-  width:100%;background:var(--bg-panel);
-  border:1px solid var(--border-2);border-radius:12px;padding:6px;z-index:25;
-  box-shadow:0 12px 30px rgba(0,0,0,.45);max-width:min(520px,92vw)
+.brandList{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:6px 10px;
+align-items:center;
 }
-.ddMenu.show{display:block}
-.ddItem{
-  width:100%;text-align:left;background:var(--bg-main);
-  border:1px solid var(--border);border-radius:10px;padding:9px 10px;
-  font-weight:1000;font-size:14px;color:var(--text);cursor:pointer;box-sizing:border-box;
-  display:flex;align-items:center;justify-content:flex-start;gap:8px;margin:6px 0
+.brand{
+display:inline-flex;
+align-items:center;
+padding:7px 10px;
+border:1px solid var(--border);
+border-radius:12px;
+background:var(--bg-panel);
+cursor:pointer;
 }
-.ddItem:hover{background:var(--bg-elevated);border-color:var(--border-2)}
-.ddItem[aria-disabled="true"]{opacity:.8;cursor:default}
-.ddEmpty{height:48px;border-radius:10px}
+.brand.sel{background:var(--accent-soft);border-color:var(--accent-hover)}
+.bRow{display:flex;gap:8px;align-items:center}
+.bNm{font-weight:1100;font-size:15px}
+.bCt{font-size:11px;color:var(--text-2)}
+
+/* ---------- INFO BOX ---------- */
 
 .ibox{
-  height:36px;min-height:36px;box-sizing:border-box;display:flex;align-items:center;justify-content:flex-end;gap:6px;
-  padding:0 10px;border:1px solid var(--border);border-radius:10px;background:var(--bg-panel);
-  flex:0 0 auto;margin-left:auto;max-width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin
+height:36px;
+display:flex;
+align-items:center;
+gap:6px;
+padding:0 10px;
+border:1px solid var(--border);
+border-radius:10px;
+background:var(--bg-panel);
+margin-left:auto;
 }
 .chip{
-  padding:3px 9px;border:1px solid var(--border-2);border-radius:999px;background:var(--bg-main);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:1000;font-size:14px;line-height:1.1;color:var(--text)
+padding:3px 9px;
+border-radius:999px;
+border:1px solid var(--border-2);
+font-weight:1000;
+font-size:14px;
 }
-.chip.ok{color:var(--ok)}.chip.bad{color:var(--bad)}.chip.unk{color:var(--unk)}.chip.muted{opacity:.88;font-weight:900;color:var(--text-2)}
+.chip.ok{color:var(--ok)}
+.chip.bad{color:var(--bad)}
+.chip.muted{color:var(--text-2)}
 
-.brandList{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 10px;align-content:flex-start;overscroll-behavior-x:none;touch-action:pan-y;align-items:center}
-.brand{
-  display:inline-flex;align-items:center;padding:7px 10px;
-  border:1px solid var(--border);border-radius:12px;background:var(--bg-panel);
-  cursor:pointer;user-select:none;width:max-content;max-width:100%
-}
-.brand:hover{border-color:var(--border-2)}
-.brand.sel{background:var(--accent-soft);border-color:var(--accent-hover)}
-@keyframes brandGlow{
-  0%{box-shadow:0 0 0 rgba(232,60,97,0);border-color:var(--border)}
-  40%{box-shadow:0 0 18px rgba(232,60,97,.45);border-color:var(--accent-hover)}
-  100%{box-shadow:0 0 0 rgba(232,60,97,0);border-color:var(--border)}
-}
-.brandList.glow .brand{animation:brandGlow 900ms ease-out}
-.bRow{display:flex;gap:8px;align-items:center;min-width:0;width:100%}
-.bNm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:1100;font-size:15px;line-height:1.2;max-width:70vw}
-.bCt{white-space:nowrap;opacity:.9;font-size:11px;color:var(--text-2)}
+/* ---------- TABLE ---------- */
 
-.panel{padding:0;display:flex;flex-direction:column;gap:6px;overflow:visible}
 .tableWrap{
-  overflow-y:auto;overflow-x:hidden;
-  border:1px solid var(--border);
-  border-radius:12px;background:var(--bg-panel);
-  overscroll-behavior-x:none;touch-action:pan-y
+border:1px solid var(--border);
+border-radius:12px;
+background:var(--bg-panel);
+overflow:auto;
 }
-table{width:100%;border-collapse:collapse;table-layout:fixed}
-th,td{border-bottom:1px solid var(--border);padding:9px 6px;text-align:center;vertical-align:middle;font-size:14px;line-height:1.1}
-td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-th{
-  position:sticky;top:0;z-index:2;
-  background:var(--thead-bg);
-  font-weight:1100;white-space:nowrap;overflow:hidden;text-overflow:clip;padding:7px 6px
+table{width:100%;border-collapse:collapse}
+th,td{
+border-bottom:1px solid var(--border);
+padding:9px 6px;
+text-align:center;
+font-size:14px;
 }
+th{background:var(--thead-bg);position:sticky;top:0}
 tbody tr:hover{background:var(--bg-elevated)}
-.left{text-align:left!important}
-td.nameCell{overflow:visible;text-overflow:clip;position:relative;z-index:1}
-td.nameCell .nm{display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:9999px;position:relative;z-index:3}
-td.eanCell{overflow:visible;text-overflow:clip}
-td.seqCell{font-weight:1100}
-td.statusBold{font-weight:1100}
 
-td.flagBad{color:var(--warn)!important;font-weight:1200!important}
-td.flagBad .cellTxt,
-td.flagBad .nm{
-  text-shadow:
-    -0.8px 0 var(--stroke),
-     0.8px 0 var(--stroke),
-     0 -0.8px var(--stroke),
-     0  0.8px var(--stroke),
-     0 0 2px var(--warn-halo-2),
-     0 0 10px var(--warn-halo-1);
+.sepL{
+border-left:1px solid rgba(232,60,97,.28)!important;
+box-shadow:inset 1px 0 0 rgba(0,0,0,.35);
 }
 
-a{color:var(--link);text-decoration:none}
-a:hover{text-decoration:underline}
-@media (max-width:980px){.fname{max-width:130px}}
+/* ---------- LIST TITLE ---------- */
+
+.rowSep{height:1px;background:var(--border);margin:6px 2px}
+.listTitleBar{
+text-align:center;
+font-weight:1300;
+font-size:18px;
+letter-spacing:.08em;
+padding:6px 0;
+}
+
+/* ---------- MODAL ---------- */
 
 .modal{position:fixed;inset:0;display:none;background:var(--overlay);z-index:600;padding:18px}
 .modalInner{
-  width:min(980px,100%);background:var(--bg-panel);
-  border:1px solid var(--border-2);border-radius:14px;
-  box-shadow:0 12px 40px var(--shadow);
-  padding:12px;display:flex;flex-direction:column;gap:10px;max-height:var(--popMaxH);overflow:auto
+background:var(--bg-panel);
+border:1px solid var(--border-2);
+border-radius:14px;
+padding:12px;
+max-height:var(--popMaxH);
+overflow:auto;
 }
-.modalInner.small{width:var(--popW)}
-.modalBtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-start;align-items:flex-start}
-.tsoftText{font-weight:900;font-size:14px;line-height:1.45;padding:10px 12px;border:1px solid var(--border-2);border-radius:12px;background:var(--bg-main);overflow:visible;position:relative}
-.miniSep{height:1px;background:var(--border);opacity:.75;border-radius:999px;margin:6px 0 8px}
-.popInner{position:relative;padding-top:54px}
-.popPickWrap{position:absolute;left:10px;top:10px;display:flex;gap:8px;align-items:center;justify-content:flex-start;z-index:80}
-.popPick,.popDismiss{
-  height:32px;padding:0 10px;border-radius:10px;font-weight:1000;font-size:13px;
-  border:1px solid var(--border-2);background:var(--bg-elevated);color:var(--text)
-}
-.popPick:hover,.popDismiss:hover{background:var(--bg-hover);border-color:var(--accent-hover)}
-.popLinkTitle{color:var(--text);text-decoration:none;font-weight:1100;font-size:15px;line-height:1.2;display:inline-block;white-space:nowrap;overflow:visible;text-overflow:clip;position:relative;z-index:60;pointer-events:auto}
-.popLinkTitle:hover{text-decoration:underline}
-.tsoftFlex{display:flex;gap:12px;align-items:stretch;overflow:visible}
-.tsoftLeft{flex:1 1 auto;min-width:0;overflow:visible}
-.tsoftRight{flex:0 0 230px;max-width:230px;display:flex;justify-content:flex-end;align-items:center;align-self:stretch;margin-left:auto;position:relative;z-index:10}
 
-.tsoftThumb{
-  width:230px;height:150px;
-  border:0;background:transparent;border-radius:0;
-  overflow:visible;cursor:pointer;display:block;padding:0;
-}
-.tsoftThumb img{
-  width:100%;height:100%;
-  object-fit:contain;display:block;
-  transform:translateX(-38px) scale(1.35);
-  transform-origin:center center;
-}
-.tsoftThumb{position:relative}
-.tsoftThumb::after{
-  content:"Büyüt";
-  position:absolute;
-  inset:auto 10px 10px 10px;
-  height:28px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(0,0,0,.35);
-  color:rgba(255,255,255,.72);
-  font-weight:1100;
-  font-size:13px;
-  letter-spacing:.02em;
-  opacity:0;
-  transform:translateY(2px);
-  transition:opacity 140ms ease,transform 140ms ease;
-  pointer-events:none;
-  backdrop-filter:blur(3px);
-}
-.tsoftThumb:hover::after{opacity:.72;transform:translateY(0)}
-.tsoftThumb:focus-visible::after{opacity:.85;transform:translateY(0)}
+/* ---------- IMAGE OVERLAY ---------- */
 
-.imgOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:var(--overlay-strong);z-index:900;padding:18px}
+.imgOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:var(--overlay-strong);z-index:900}
 .imgOverlay.show{display:flex}
-.imgOverlay .lbWrap{transform:scale(.86);opacity:0;transition:transform 220ms ease,opacity 220ms ease;will-change:transform,opacity}
-.imgOverlay.show .lbWrap{transform:scale(1);opacity:1}
-.imgOverlay img{
-  width:auto;height:auto;max-width:75vw;max-height:75vh;border-radius:10px;
-  border:1px solid var(--border-2);background:var(--bg-main);
-  box-shadow:0 18px 60px rgba(0,0,0,.65);cursor:pointer
-}
-.imgOverlay.closing .lbWrap{transform:scale(.88);opacity:0}
+.imgOverlay img{max-width:75vw;max-height:75vh;border-radius:10px}
 
-.pasteWrap{position:relative}
-.pasteHint{
-  position:absolute;left:12px;top:10px;z-index:3;pointer-events:none;font-weight:1100;font-size:14px;opacity:.95;
-  padding:4px 10px;border:1px solid var(--border-2);border-radius:999px;
-  background:rgba(30,30,30,.65);
-  box-shadow:0 10px 24px rgba(0,0,0,.35);backdrop-filter:blur(4px)
-}
-.modal textarea{
-  width:100%;height:220px;resize:vertical;box-sizing:border-box;
-  background:var(--bg-main);color:var(--text);
-  border:1px solid var(--border-2);border-radius:12px;padding:10px;
-  font-weight:800;font-size:14px
+/* ---------- RESPONSIVE ---------- */
+
+@media(max-width:900px){
+.brandList{justify-content:center}
 }
 
-/* ✅ AIDE WEBP: eski konumu koru (wrap sadece hover label için) */
-#depoSpinWrap{
-  position:absolute;
-  left:calc(50% + 100px);
-  top:50%;
-  transform:translate(-50%,-55%) scale(1.875);
-  width:min(180px,60%);
-  opacity:.95;
-  pointer-events:auto;
-  z-index:2;
-  filter:drop-shadow(0 10px 24px rgba(0,0,0,.45));
-  border-radius:6px;
-  cursor:pointer;
-}
-#depoSpin{
-  width:100%;
-  height:auto;
-  display:block;
-  border-radius:6px;
-}
-#depoSpinWrap::after{
-  content:"Büyüt";
-  position:absolute;
-  left:50%;
-  bottom:-14px;
-  transform:translateX(-50%) translateY(2px);
-  height:26px;
-  padding:0 10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(0,0,0,.35);
-  color:rgba(255,255,255,.72);
-  font-weight:1100;
-  font-size:12px;
-  letter-spacing:.02em;
-  opacity:0;
-  transition:opacity 140ms ease,transform 140ms ease;
-  pointer-events:none;
-  backdrop-filter:blur(3px);
-  white-space:nowrap;
-}
-#depoSpinWrap:hover::after{opacity:.72;transform:translateX(-50%) translateY(0)}
-#depoSpinWrap:focus-within::after{opacity:.85;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
 
-.ctrlStack{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
-.cloudPrev{
-  display:inline-flex;align-items:center;justify-content:center;
-  height:20px;padding:0 8px;border-radius:999px;
-  border:1px solid var(--border);background:var(--bg-panel);
-  font-weight:1000;font-size:12px;opacity:.9;color:var(--text-2)
-}
-.cloudPrev:hover{
-  border-color:var(--bad);
-  box-shadow:0 0 18px rgba(255,77,121,.45);
-  color:var(--bad);
-}
-.cloudBtnSmall{
-  height:32px;padding:0 10px;border-radius:10px;font-weight:1000;font-size:13px;
-  border:1px solid var(--border-2);background:var(--bg-elevated);color:var(--text)
-}
-.cloudBtnSmall:hover{background:var(--bg-hover);border-color:var(--accent-hover)}
-.cloudBtnSmall.sel{background:var(--accent-soft);border-color:var(--accent-hover)}
+<body>
+<main class="layout">
 
-.saveLine{display:flex;gap:10px;align-items:center;white-space:nowrap;overflow:visible;position:relative;z-index:999}
-.saveLine input{transform:scale(1.15)}
-.saveLine span{opacity:.92;font-weight:1000;white-space:nowrap}
-.saveLine.left{justify-content:flex-start}
+<header class="siteHeader">
+<div class="siteTitle">Tedarick-G</div>
+</header>
 
-.sepL{border-left:1px solid rgba(232,60,97,.28)!important;box-shadow:inset 1px 0 0 rgba(0,0,0,.35)}
-</style></head>
-<body><main class="layout">
-<header class="siteHeader"><div class="siteTitle">Tedarick-G</div></header>
-<aside><div class="topRow"><div class="controls" id="leftControls">
-<div class="ddWrap" id="supplierWrap">
-<button id="supplierBtn" class="file" type="button" aria-expanded="false" title="Tedarikçi seç"><span class="fbtn" id="supplierLabel">1) Tedarikçi: Compel</span></button>
-<div class="ddMenu" id="supplierMenu" role="menu" aria-hidden="true">
-<button type="button" class="ddItem" id="supplierCompelItem">Compel</button>
-<button type="button" class="ddItem" id="supplierAllItem">Tüm Markalar</button>
-<button type="button" class="ddItem" id="supplierAkalinItem">Akalın</button>
-<button type="button" class="ddItem" id="supplierAddBtn">Tedarikçi ekle</button>
-<div class="ddEmpty"></div></div></div>
+<aside>
 
-<button id="brandHintBtn" class="file" type="button" title="Marka kutularını işaretle"><span class="fbtn">2) Marka Seç</span></button>
+<div class="topRow">
 
-<div class="ctrlStack" id="tsoftStack">
-  <span class="cloudPrev" id="tsoftPrev" style="display:none"></span>
-  <label class="file" id="sescBox" title="T-Soft Stok (CSV)"><span class="fbtn">3) T-Soft Stok</span><span class="fname hide" id="n2">Yükle</span><input id="f2" type="file" accept=".csv,text/csv"></label>
+<div class="controls" id="leftControls">
+
+<button id="supplierBtn" class="file" type="button">
+<span class="fbtn" id="supplierLabel">1) Tedarikçi: Compel</span>
+</button>
+
+<button id="brandHintBtn" class="file" type="button">
+<span class="fbtn">2) Marka Seç</span>
+</button>
+
+<label class="file" id="sescBox">
+<span class="fbtn">3) T-Soft Stok</span>
+<input id="f2" type="file" accept=".csv">
+</label>
+
+<button id="depoBtn" class="file" type="button">
+<span class="fbtn">4) Aide Stok</span>
+</button>
+
+<button id="go">Listele</button>
+<button id="dl1" disabled>CSV Çıktı</button>
+
 </div>
-
-<div class="ctrlStack" id="aideStack">
-  <span class="cloudPrev" id="aidePrev" style="display:none"></span>
-  <button id="depoBtn" class="file" type="button" title="Aide Stok"><span class="fbtn">4) Aide Stok</span><span class="fname hide" id="n4">Yükle</span></button>
-</div>
-
-<button id="go" title="Listele">Listele</button><button id="dl1" disabled>CSV Çıktı</button></div>
 
 <div class="ibox" id="infoBox">
 <span class="chip muted" id="brandStatus">Markalar yükleniyor…</span>
@@ -368,99 +232,48 @@ a:hover{text-decoration:underline}
 <span class="chip" id="l2Chip">T-Soft:-</span>
 <span class="chip" id="l4Chip">Aide:-</span>
 <span class="chip muted" id="sum">✓0 • ✕0</span>
-</div></div>
+</div>
 
-<div class="rowSep" aria-hidden="true"></div><div class="brandList" id="brandList"></div></aside>
+</div>
+
+<div class="rowSep"></div>
+<div class="brandList" id="brandList"></div>
+
+</aside>
 
 <section class="maincol">
-  <section class="panel results"><div class="tableWrap"><table id="t1"></table></div></section>
 
-  <!-- Eski unmatched (Compel modu) -->
-  <section class="panel unmatched" id="unmatchedSection" style="display:none">
-    <div class="rowSep" aria-hidden="true"></div><div class="listTitleBar" id="unmatchedTitle">Eşleşmeyen Ürünler Listesi</div>
-    <div class="tableWrap"><table id="t2"></table></div>
-  </section>
-
-  <!-- ✅ Yeni split unmatched (Tüm Markalar modu) -->
-  <section class="panel unmatched" id="unmatchedSplitSection" style="display:none">
-    <div class="rowSep" aria-hidden="true"></div>
-    <div class="listTitleBar" id="unmatchedSplitTitle">Eşleşmeyen Ürünler</div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="tableWrap"><table id="t2L"></table></div>
-      <div class="tableWrap"><table id="t2R"></table></div>
-    </div>
-  </section>
-</section></main>
-
-<div class="imgOverlay" id="imgOverlay" aria-hidden="true"><div class="lbWrap"><img id="imgOverlayImg" alt="Önizleme"></div></div>
-
-<!-- ✅ TSOFT MODAL -->
-<div class="modal" id="tsoftModal" aria-hidden="true"><div class="modalInner small popInner" id="tsoftInner">
-<div class="popPickWrap">
-  <button id="tsoftDailyBtn" class="cloudBtnSmall" type="button" disabled title="Bugünün verisini seç">Bugün —</button>
-  <button id="tsoftClose" class="popPick" type="button">CSV Yükle</button>
-  <button id="tsoftDismiss" class="popDismiss" type="button">Kapat</button>
+<section class="panel results">
+<div class="tableWrap">
+<table id="t1"></table>
 </div>
+</section>
 
-<div class="tsoftText"><div class="tsoftFlex"><div class="tsoftLeft">
-<a class="popLinkTitle" href="https://sescibaba-com.tsoftpanel.com/frame/app-store/app.csvexport/products/export" target="_blank" rel="noopener" title="Yeni sekmede aç">T-Soft &gt; Ürünler &gt; Excel Ürün Sihirbazı &gt; Exel Ürün Dışa Aktar</a>
-<div class="miniSep" aria-hidden="true"></div>
-<div class="tsoftCols">→Web Servis Kodu<br>→Ürün Adı<br>→Tedarikçi Ürün Kodu<br>→Barkod<br>→Stok<br>→Aktif<br>→Marka<br>→SEO Link</div>
-
-<div class="miniSep" aria-hidden="true"></div>
-<label class="saveLine left" title="Yetkili için: Bugünün verisi olarak kaydeder (overwrite)">
-  <input id="tsoftSaveToday" type="checkbox">
-  <span>Bugünün verisi olarak kaydet (Yetkili)</span>
-</label>
-
-</div><div class="tsoftRight" aria-label="Yardım görseli">
-<button class="tsoftThumb" id="tsoftThumb" type="button" title="Büyüt">
-  <img
-    id="tsoftThumbImg"
-    src="https://robot-workstation.github.io/tedarick/media/t-soft_destek.webp"
-    alt="T-Soft destek görseli"
-    loading="lazy"
-  >
-</button>
-</div></div></div></div></div>
-
-<!-- ✅ AIDE MODAL -->
-<div class="modal" id="depoModal" aria-hidden="true"><div class="modalInner small" id="depoInner">
-<div class="modalBtns">
-  <button id="aideDailyBtn" class="cloudBtnSmall" style="height:36px" type="button" disabled title="Bugünün verisini seç">Bugün —</button>
-  <button id="depoLoad" type="button">Yükle</button>
-  <button id="depoPasteBtn" type="button">Yapıştır</button>
-  <button id="depoClear" type="button">Temizle</button>
-  <button id="depoClose" type="button">Kapat</button>
+<section class="panel unmatched" id="unmatchedSection" style="display:none">
+<div class="rowSep"></div>
+<div class="listTitleBar">Eşleşmeyen Ürünler Listesi</div>
+<div class="tableWrap">
+<table id="t2"></table>
 </div>
+</section>
 
-<div class="pasteWrap">
-  <div class="pasteHint">Buraya Yapıştır</div>
-  <textarea id="depoPaste"></textarea>
-
-  <div style="margin-top:10px">
-    <label class="saveLine left" id="aideSaveLine" style="display:none" title="Yetkili için: Bugünün verisi olarak kaydeder (overwrite)">
-      <input id="aideSaveToday" type="checkbox">
-      <span>Bugünün verisi olarak kaydet (Yetkili)</span>
-    </label>
-  </div>
-
-  <div id="depoSpinWrap" tabindex="0" role="button" aria-label="Büyüt" title="Büyüt">
-    <img id="depoSpin" src="https://www.sescibaba.com/Data/EditorFiles/urun_resim/Aidestek.webp" alt="">
-  </div>
+<section class="panel unmatched" id="unmatchedSplitSection" style="display:none">
+<div class="rowSep"></div>
+<div class="listTitleBar">Eşleşmeyen Ürünler</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div class="tableWrap"><table id="t2L"></table></div>
+<div class="tableWrap"><table id="t2R"></table></div>
 </div>
-</div></div>
+</section>
 
-<datalist id="wsCodes"></datalist><datalist id="supCodes"></datalist>
+</section>
 
-<script type="module">
-(()=>{const b=document.getElementById('tsoftThumb'),i=document.getElementById('tsoftThumbImg'),o=document.getElementById('imgOverlay'),oi=document.getElementById('imgOverlayImg');if(!b||!i||!o||!oi)return;let t=null;const open=src=>{t&&(clearTimeout(t),t=null);o.classList.remove('closing');oi.src=src;o.classList.add('show');o.setAttribute('aria-hidden','false')};const close=()=>{o.classList.add('closing');t=setTimeout(()=>{o.classList.remove('show');o.classList.remove('closing');o.setAttribute('aria-hidden','true');oi.removeAttribute('src');t=null},220)};b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();open(i.currentSrc||i.src)});o.addEventListener('click',e=>{e.preventDefault();close()});addEventListener('keydown',e=>{e.key==='Escape'&&o.classList.contains('show')&&close()});const m=document.getElementById('tsoftModal'),d=document.getElementById('tsoftDismiss');m&&d&&d.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();m.style.display='none';m.setAttribute('aria-hidden','true')});})();
-</script>
+</main>
 
-<script type="module">
-(()=>{const wrap=document.getElementById('depoSpinWrap'),img=document.getElementById('depoSpin'),o=document.getElementById('imgOverlay'),oi=document.getElementById('imgOverlayImg');if(!wrap||!img||!o||!oi)return;let t=null;const open=()=>{t&&(clearTimeout(t),t=null);o.classList.remove('closing');oi.src=img.currentSrc||img.src;o.classList.add('show');o.setAttribute('aria-hidden','false')};wrap.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();open()});wrap.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;e.preventDefault();open()});})();
-</script>
+<div class="imgOverlay" id="imgOverlay">
+<img id="imgOverlayImg">
+</div>
 
 <script type="module" src="./js/app.js"></script>
-</body></html>
+</body>
+</html>
