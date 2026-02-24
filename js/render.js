@@ -25,11 +25,11 @@ function css(){
 .tagRight{flex:0 0 auto;text-align:right;white-space:nowrap;opacity:.92;font-weight:1100}
 .tagLeft .nm,.tagLeft .cellTxt{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sepL{border-left:1px solid rgba(232,60,97,.28)!important;box-shadow:inset 1px 0 0 rgba(0,0,0,.35)}
-#listTitle,#unmatchedTitle{font-weight:1300!important;font-size:20px!important;letter-spacing:.02em}
-#t1 thead th .hTxt,#t2 thead th .hTxt{display:inline-block;transform-origin:left center}
+#listTitle,#unmatchedTitle,#unmatchedSplitTitle{font-weight:1300!important;font-size:20px!important;letter-spacing:.02em}
+#t1 thead th .hTxt,#t2 thead th .hTxt,#t2L thead th .hTxt,#t2R thead th .hTxt{display:inline-block;transform-origin:left center}
 th.hdrThin{font-weight:700!important}
 th.hdrTight .hTxt{letter-spacing:-.02em;font-size:12px}
-#t1 thead th,#t2 thead th{position:sticky!important;top:var(--theadTop,0px)!important;z-index:120!important;background:#1b1b1b!important;box-shadow:0 1px 0 rgba(31,36,48,.9)}
+#t1 thead th,#t2 thead th,#t2L thead th,#t2R thead th{position:sticky!important;top:var(--theadTop,0px)!important;z-index:120!important;background:#1b1b1b!important;box-shadow:0 1px 0 rgba(31,36,48,.9)}
 .warnHalo{
   text-shadow:
     -0.8px 0 #000,
@@ -43,30 +43,37 @@ th.tightCol,td.tightCol{padding-left:4px!important;padding-right:4px!important}
 td.eanCell{white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important}
 td.eanCell .cellTxt{white-space:nowrap!important}
 
-/* ✅ SAYFAYA SIĞDIRMA:
-   - wrapper yatay taşma yapmasın
-   - tablolar %100 genişliği doldursun (kenarlardan kısa kalmasın)
-   - çok dar ekranda JS scaleX ile sığdırılır */
+/* ✅ SAYFAYA SIĞDIRMA */
 .tableWrap{overflow-x:hidden!important}
-#t1,#t2{
+#t1,#t2,#t2L,#t2R{
   width:100%!important;
   table-layout:fixed!important;
   transform-origin:left top;
 }
-#t1 th,#t1 td,#t2 th,#t2 td{white-space:nowrap}
+#t1 th,#t1 td,#t2 th,#t2 td,#t2L th,#t2L td,#t2R th,#t2R td{white-space:nowrap}
+#t1 td.nameCell,#t2 td.nameCell,#t2L td.nameCell,#t2R td.nameCell{min-width:0}
 
-/* name hücreleri: responsive genişleyip daralsın */
-#t1 td.nameCell,#t2 td.nameCell{min-width:0}
+/* ✅ Tüm Markalar: pasif T-Soft adı (renk aynı, ince gri çizgi) */
+.tsoftPassive{
+  text-decoration-line:line-through;
+  text-decoration-thickness:1px;
+  text-decoration-color:rgba(160,160,160,.85);
+}
 
-/* t2 kod kolonlarını içerik kadar dar tutmaya yardımcı */
-#t2 td.tightCol,#t2 th.tightCol{width:1%!important}
+/* ✅ Tüm Markalar: stok tutarsız satır soft pulse (1sn, sürekli) */
+@keyframes softStockPulse{
+  0%{box-shadow:0 0 0 rgba(232,60,97,0); background:transparent}
+  55%{box-shadow:0 0 14px rgba(232,60,97,.26); background:rgba(232,60,97,.06)}
+  100%{box-shadow:0 0 0 rgba(232,60,97,0); background:transparent}
+}
+tr.stockPulse{animation:softStockPulse 1000ms ease-in-out infinite}
 `;
   document.head.appendChild(st)
 }
 css();
 
-const cellName=(txt,href,pulse=false)=>{
-  const v=(txt??'').toString(),u=href||'',cls=`nm${pulse?' namePulse':''}`;
+const cellName=(txt,href,pulse=false,extraCls='')=>{
+  const v=(txt??'').toString(),u=href||'',cls=`nm${pulse?' namePulse':''}${extraCls?` ${extraCls}`:''}`;
   return u?`<a class="${cls}" href="${esc(u)}" target="_blank" rel="noopener" title="${esc(v)}">${esc(v)}</a>`:`<span class="${cls}" title="${esc(v)}">${esc(v)}</span>`
 };
 
@@ -93,7 +100,6 @@ function fitHeader(tableId){
   })
 }
 
-// ✅ Eğer tablo hâlâ sığmıyorsa (çok dar ekran) scaleX ile sığdır
 function fitTableToWrap(tableId){
   const t=$(tableId);
   if(!t) return;
@@ -105,7 +111,6 @@ function fitTableToWrap(tableId){
   const wrapW=wrap.clientWidth||0;
   if(wrapW<=0) return;
 
-  // fixed+100% iken scrollWidth ölçümü “tam” olmayabilir; doğal ölçüm için geçici klon kullan
   const clone=t.cloneNode(true);
   clone.style.visibility='hidden';
   clone.style.position='absolute';
@@ -125,9 +130,7 @@ function fitTableToWrap(tableId){
 
 function adjust(){
   _raf=0;enforceSticky();
-  fitHeader('t1');fitHeader('t2');
-  fitTableToWrap('t1');
-  fitTableToWrap('t2');
+  ['t1','t2','t2L','t2R'].forEach(id=>{fitHeader(id);fitTableToWrap(id)});
 
   const nameFit=tableId=>{
     const t=$(tableId);if(!t)return;
@@ -147,155 +150,246 @@ function adjust(){
       }
     }
   };
-  nameFit('t1');nameFit('t2');
+  ['t1','t2','t2L','t2R'].forEach(nameFit);
   if(!_bound){_bound=true;addEventListener('resize',sched)}
 }
 
 const fmtNum=n=>{const x=Number(n);return Number.isFinite(x)?(Math.round(x)===x?String(x):String(x)):'0'};
+const fmtStockSimple=n=>{const x=Number(n);return Number.isFinite(x)?String(x):'0'};
 
 export function createRenderer({ui}={}){
-  return{render(R,Ux,depotReady){
-    const T1_SEP_LEFT=new Set(["Ürün Kodu (Compel)","Ürün Kodu (T-Soft)","Stok (Compel)","EAN (Compel)"]);
-    const tight=c=>(c==="Ürün Kodu (Compel)"||c==="Ürün Kodu (T-Soft)");
-    const NARROW_ONLY=new Set(["Sıra No","Marka","Ürün Kodu (Compel)","Ürün Kodu (T-Soft)"]);
+  return{
+    // ✅ Eski (Compel modu) render aynen
+    render(R,Ux,depotReady){
+      // Compel modu UI: split section kapat
+      const splitSec=$('unmatchedSplitSection'); splitSec && (splitSec.style.display='none');
+      const t2L=$('t2L'); t2L && (t2L.innerHTML='');
+      const t2R=$('t2R'); t2R && (t2R.innerHTML='');
 
-    // ✅ t1 responsive: toplam 100
-    // (isim kolonları geniş; pencereye göre büyüyüp küçülür)
-    const W1=[4,8,10,20,10,20,8,8,8,7,7];
+      const T1_SEP_LEFT=new Set(["Ürün Kodu (Compel)","Ürün Kodu (T-Soft)","Stok (Compel)","EAN (Compel)"]);
+      const tight=c=>(c==="Ürün Kodu (Compel)"||c==="Ürün Kodu (T-Soft)");
+      const NARROW_ONLY=new Set(["Sıra No","Marka","Ürün Kodu (Compel)","Ürün Kodu (T-Soft)"]);
 
-    const head=COLS.map(c=>{
-      const l=disp(c);
-      const cls=[
-        T1_SEP_LEFT.has(c)?'sepL':'',
-        tight(c)?'hdrThin hdrTight':'',
-        NARROW_ONLY.has(c)?'tightCol':''
-      ].filter(Boolean).join(' ');
-      return `<th class="${cls}" title="${esc(l)}"><span class="hTxt">${fmtHdr(l)}</span></th>`
-    }).join('');
+      const W1=[4,8,10,20,10,20,8,8,8,7,7];
 
-    const normS=s=>String(s??'').trim();
-    const cmpTR=(a,b)=>normS(a).localeCompare(normS(b),'tr',{sensitivity:'base'});
-    const Rview=(R||[])
-      .filter(r=>!!r?._m)
-      .map((row,idx)=>({row,idx}))
-      .sort((A,B)=>{
-        const a=A.row,b=B.row;
-        const ab=cmpTR(a?.["Marka"],b?.["Marka"]); if(ab) return ab;
-        const an=cmpTR(a?.["Ürün Adı (Compel)"],b?.["Ürün Adı (Compel)"]); if(an) return an;
-        const ac=cmpTR(a?.["Ürün Kodu (Compel)"],b?.["Ürün Kodu (Compel)"]); if(ac) return ac;
-        const tn=cmpTR(a?.["Ürün Adı (T-Soft)"],b?.["Ürün Adı (T-Soft)"]); if(tn) return tn;
-        return A.idx-B.idx;
-      })
-      .map(x=>x.row);
-
-    const body=(Rview||[]).map((r,rowIdx)=>`<tr>${COLS.map((c,idx)=>{
-      let v=r[c]??'';
-      if(c==="Sıra No") v=String(rowIdx+1);
-
-      if(c==="Ürün Adı (Compel)")return `<td class="left nameCell">${cellName(v,r._clink||'')}</td>`;
-      if(c==="Ürün Adı (T-Soft)"){
-        const txt=(v??'').toString().trim();
-        return `<td class="left nameCell">${cellName(txt,r._seo||'')}</td>`;
-      }
-
-      const seq=idx===0;
-      const ean=(c==="EAN (Compel)"||c==="EAN (T-Soft)");
-      const eanBad=(c==="EAN (T-Soft)"&&r?._eanBad===true);
-      const stokBad=(c==="Stok (T-Soft)"&&r?._stokBad===true);
-      const bad=eanBad||stokBad;
-
-      const cls=[
-        T1_SEP_LEFT.has(c)?'sepL':'',
-        seq?'seqCell':'',
-        ean?'eanCell':'',
-        bad?'flagBad':'',
-        NARROW_ONLY.has(c)?'tightCol':''
-      ].filter(Boolean).join(' ');
-
-      const title=(c==="Stok (Depo)"&&depotReady)?`${v} (Depo Toplam: ${r._draw??'0'})`:v;
-      return `<td class="${cls}" title="${esc(title)}"><span class="cellTxt">${esc(v)}</span></td>`
-    }).join('')}</tr>`).join('');
-
-    $('t1').innerHTML=colGrp(W1)+`<thead><tr>${head}</tr></thead><tbody>${body}</tbody>`;
-
-    const sec=$('unmatchedSection'),ut=$('unmatchedTitle');
-    ut&&(ut.textContent='Compel, T-Soft ve Aide Eşleşmeyen Ürünler Listesi');
-    const U=Array.isArray(Ux)?Ux:[];
-    if(!U.length){sec&&(sec.style.display='none')}
-    else{
-      sec&&(sec.style.display='');
-
-      const UCOLS=[
-        "Sıra",
-        "Marka",
-        "Compel Ürün Kodu",
-        "Compel Ürün Adı",
-        "T-Soft Ürün Kodu",
-        "T-Soft Ürün Adı",
-        "Aide Ürün Kodu",
-        "Aide Ürün Adı"
-      ];
-
-      // ✅ t2 responsive: name kolonları büyüyüp küçülür (toplam 100)
-      const W2=[4,10,10,18,10,18,10,20];
-
-      const head2=UCOLS.map(c=>{
-        const sep=(c==="Compel Ürün Kodu"||c==="T-Soft Ürün Kodu"||c==="Aide Ürün Kodu")?' sepL':'';
-        const tightCol=(c==="Sıra"||c==="Marka"||c==="Compel Ürün Kodu"||c==="T-Soft Ürün Kodu"||c==="Aide Ürün Kodu")?' tightCol':'';
-        return `<th class="${(sep+tightCol).trim()}" title="${esc(c)}"><span class="hTxt">${fmtHdr(c)}</span></th>`
+      const head=COLS.map(c=>{
+        const l=disp(c);
+        const cls=[
+          T1_SEP_LEFT.has(c)?'sepL':'',
+          tight(c)?'hdrThin hdrTight':'',
+          NARROW_ONLY.has(c)?'tightCol':''
+        ].filter(Boolean).join(' ');
+        return `<th class="${cls}" title="${esc(l)}"><span class="hTxt">${fmtHdr(l)}</span></th>`
       }).join('');
 
-      const body2=U.map((r,i)=>{
-        const seq=r["Sıra"]??String(i+1),brand=r["Marka"]??'';
+      const normS=s=>String(s??'').trim();
+      const cmpTR=(a,b)=>normS(a).localeCompare(normS(b),'tr',{sensitivity:'base'});
+      const Rview=(R||[])
+        .filter(r=>!!r?._m)
+        .map((row,idx)=>({row,idx}))
+        .sort((A,B)=>{
+          const a=A.row,b=B.row;
+          const ab=cmpTR(a?.["Marka"],b?.["Marka"]); if(ab) return ab;
+          const an=cmpTR(a?.["Ürün Adı (Compel)"],b?.["Ürün Adı (Compel)"]); if(an) return an;
+          const ac=cmpTR(a?.["Ürün Kodu (Compel)"],b?.["Ürün Kodu (Compel)"]); if(ac) return ac;
+          const tn=cmpTR(a?.["Ürün Adı (T-Soft)"],b?.["Ürün Adı (T-Soft)"]); if(tn) return tn;
+          return A.idx-B.idx;
+        })
+        .map(x=>x.row);
 
-        // ✅ Kodlar artık app.js/depot.js tarafından dolduruluyor
-        const cCode=(r["Compel Ürün Kodu"]??r["Ürün Kodu (Compel)"]??'').toString().trim();
-        const cNm=r["Compel Ürün Adı"]??'',cLn=r._clink||'',cPulse=!!r._pulseC;
+      const body=(Rview||[]).map((r,rowIdx)=>`<tr>${COLS.map((c,idx)=>{
+        let v=r[c]??'';
+        if(c==="Sıra No") v=String(rowIdx+1);
 
-        const tCode=(r["T-Soft Ürün Kodu"]??'').toString().trim();
-        const tNm=r["T-Soft Ürün Adı"]??'',tLn=r._seo||'';
+        if(c==="Ürün Adı (Compel)")return `<td class="left nameCell">${cellName(v,r._clink||'')}</td>`;
+        if(c==="Ürün Adı (T-Soft)"){
+          const txt=(v??'').toString().trim();
+          return `<td class="left nameCell">${cellName(txt,r._seo||'')}</td>`;
+        }
 
-        const aCode=(r["Aide Ürün Kodu"]??'').toString().trim();
-        const aNm=r["Aide Ürün Adı"]??r["Depo Ürün Adı"]??'',aPulse=!!r._pulseD;
+        const seq=idx===0;
+        const ean=(c==="EAN (Compel)"||c==="EAN (T-Soft)");
+        const eanBad=(c==="EAN (T-Soft)"&&r?._eanBad===true);
+        const stokBad=(c==="Stok (T-Soft)"&&r?._stokBad===true);
+        const bad=eanBad||stokBad;
 
-        const cNum=stockToNumber(r._cstokraw??'',{source:'compel'});
-        const cTag=cNm?(cNum<=0?'(Stok Yok)':'(Stok Var)'):'';
+        const cls=[
+          T1_SEP_LEFT.has(c)?'sepL':'',
+          seq?'seqCell':'',
+          ean?'eanCell':'',
+          bad?'flagBad':'',
+          NARROW_ONLY.has(c)?'tightCol':''
+        ].filter(Boolean).join(' ');
 
-        const tAct=r._taktif,tStock=Number(r._tstok??0);
-        const tTag=tNm?(tAct===true?`(Aktif: ${fmtNum(tStock)} Stok)`:(tAct===false?'(Pasif)':'')):'';
+        const title=(c==="Stok (Depo)"&&depotReady)?`${v} (Depo Toplam: ${r._draw??'0'})`:v;
+        return `<td class="${cls}" title="${esc(title)}"><span class="cellTxt">${esc(v)}</span></td>`
+      }).join('')}</tr>`).join('');
 
-        const aNum=Number(r._dstok??0);
-        const aTag=aNm?(aNum<=0?'(Stok Yok)':`(Stok: ${fmtNum(aNum)})`):'';
+      $('t1').innerHTML=colGrp(W1)+`<thead><tr>${head}</tr></thead><tbody>${body}</tbody>`;
 
-        const compelCode=cCode?`<span class="cellTxt" title="${esc(cCode)}">${esc(cCode)}</span>`:`<span class="cellTxt">—</span>`;
-        const tsoftCode=tCode?`<span class="cellTxt" title="${esc(tCode)}">${esc(tCode)}</span>`:`<span class="cellTxt">—</span>`;
-        const aideCode=aCode?`<span class="cellTxt" title="${esc(aCode)}">${esc(aCode)}</span>`:`<span class="cellTxt">—</span>`;
+      const sec=$('unmatchedSection'),ut=$('unmatchedTitle');
+      ut&&(ut.textContent='Compel, T-Soft ve Aide Eşleşmeyen Ürünler Listesi');
+      const U=Array.isArray(Ux)?Ux:[];
+      if(!U.length){sec&&(sec.style.display='none')}
+      else{
+        sec&&(sec.style.display='');
 
-        const compel=cNm?`<div class="tagFlex"><span class="tagLeft">${cellName(cNm,cLn,cPulse)}</span><span class="tagRight">${esc(cTag)}</span></div>`:`<span class="cellTxt">—</span>`;
-        const tsoft=tNm?`<div class="tagFlex"><span class="tagLeft">${cellName(tNm,tLn,false)}</span><span class="tagRight">${esc(tTag)}</span></div>`:`<span class="cellTxt">—</span>`;
-        const aide=aNm?`<div class="tagFlex" title="${esc(aNm)}"><span class="cellTxt tagLeft${aPulse?' namePulse':''}">${esc(aNm)}</span><span class="tagRight">${esc(aTag)}</span></div>`:`<span class="cellTxt">—</span>`;
+        const UCOLS=[
+          "Sıra",
+          "Marka",
+          "Compel Ürün Kodu",
+          "Compel Ürün Adı",
+          "T-Soft Ürün Kodu",
+          "T-Soft Ürün Adı",
+          "Aide Ürün Kodu",
+          "Aide Ürün Adı"
+        ];
 
-        return `<tr id="u_${i}">
-          <td class="seqCell tightCol" title="${esc(seq)}"><span class="cellTxt">${esc(seq)}</span></td>
-          <td class="tightCol" title="${esc(brand)}"><span class="cellTxt">${esc(brand)}</span></td>
+        const W2=[4,10,10,18,10,18,10,20];
 
-          <td class="tightCol sepL" title="${esc(cCode)}">${compelCode}</td>
-          <td class="left nameCell">${compel}</td>
+        const head2=UCOLS.map(c=>{
+          const sep=(c==="Compel Ürün Kodu"||c==="T-Soft Ürün Kodu"||c==="Aide Ürün Kodu")?' sepL':'';
+          const tightCol=(c==="Sıra"||c==="Marka"||c==="Compel Ürün Kodu"||c==="T-Soft Ürün Kodu"||c==="Aide Ürün Kodu")?' tightCol':'';
+          return `<th class="${(sep+tightCol).trim()}" title="${esc(c)}"><span class="hTxt">${fmtHdr(c)}</span></th>`
+        }).join('');
 
-          <td class="tightCol sepL" title="${esc(tCode)}">${tsoftCode}</td>
-          <td class="left nameCell">${tsoft}</td>
+        const body2=U.map((r,i)=>{
+          const seq=r["Sıra"]??String(i+1),brand=r["Marka"]??'';
+          const cCode=(r["Compel Ürün Kodu"]??r["Ürün Kodu (Compel)"]??'').toString().trim();
+          const cNm=r["Compel Ürün Adı"]??'',cLn=r._clink||'',cPulse=!!r._pulseC;
 
-          <td class="tightCol sepL" title="${esc(aCode)}">${aideCode}</td>
-          <td class="left nameCell">${aide}</td>
+          const tCode=(r["T-Soft Ürün Kodu"]??'').toString().trim();
+          const tNm=r["T-Soft Ürün Adı"]??'',tLn=r._seo||'';
+
+          const aCode=(r["Aide Ürün Kodu"]??'').toString().trim();
+          const aNm=r["Aide Ürün Adı"]??r["Depo Ürün Adı"]??'',aPulse=!!r._pulseD;
+
+          const cNum=stockToNumber(r._cstokraw??'',{source:'compel'});
+          const cTag=cNm?(cNum<=0?'(Stok Yok)':'(Stok Var)'):'';
+
+          const tAct=r._taktif,tStock=Number(r._tstok??0);
+          const tTag=tNm?(tAct===true?`(Aktif: ${fmtNum(tStock)} Stok)`:(tAct===false?'(Pasif)':'')):'';
+
+          const aNum=Number(r._dstok??0);
+          const aTag=aNm?(aNum<=0?'(Stok Yok)':`(Stok: ${fmtNum(aNum)})`):'';
+
+          const compelCode=cCode?`<span class="cellTxt" title="${esc(cCode)}">${esc(cCode)}</span>`:`<span class="cellTxt">—</span>`;
+          const tsoftCode=tCode?`<span class="cellTxt" title="${esc(tCode)}">${esc(tCode)}</span>`:`<span class="cellTxt">—</span>`;
+          const aideCode=aCode?`<span class="cellTxt" title="${esc(aCode)}">${esc(aCode)}</span>`:`<span class="cellTxt">—</span>`;
+
+          const compel=cNm?`<div class="tagFlex"><span class="tagLeft">${cellName(cNm,cLn,cPulse)}</span><span class="tagRight">${esc(cTag)}</span></div>`:`<span class="cellTxt">—</span>`;
+          const tsoft=tNm?`<div class="tagFlex"><span class="tagLeft">${cellName(tNm,tLn,false)}</span><span class="tagRight">${esc(tTag)}</span></div>`:`<span class="cellTxt">—</span>`;
+          const aide=aNm?`<div class="tagFlex" title="${esc(aNm)}"><span class="cellTxt tagLeft${aPulse?' namePulse':''}">${esc(aNm)}</span><span class="tagRight">${esc(aTag)}</span></div>`:`<span class="cellTxt">—</span>`;
+
+          return `<tr id="u_${i}">
+            <td class="seqCell tightCol" title="${esc(seq)}"><span class="cellTxt">${esc(seq)}</span></td>
+            <td class="tightCol" title="${esc(brand)}"><span class="cellTxt">${esc(brand)}</span></td>
+
+            <td class="tightCol sepL" title="${esc(cCode)}">${compelCode}</td>
+            <td class="left nameCell">${compel}</td>
+
+            <td class="tightCol sepL" title="${esc(tCode)}">${tsoftCode}</td>
+            <td class="left nameCell">${tsoft}</td>
+
+            <td class="tightCol sepL" title="${esc(aCode)}">${aideCode}</td>
+            <td class="left nameCell">${aide}</td>
+          </tr>`
+        }).join('');
+
+        $('t2').innerHTML=colGrp(W2)+`<thead><tr>${head2}</tr></thead><tbody>${body2}</tbody>`
+      }
+
+      const matched=(R||[]).filter(x=>x._m).length;
+      ui?.setChip?.('sum',`✓${matched} • ✕${(R||[]).length-matched}`,'muted');
+      const dl1=$('dl1');dl1&&(dl1.disabled=!(R||[]).length);
+      enforceSticky();sched()
+    },
+
+    // ✅ Yeni: Tüm Markalar modu render
+    renderAll({rows=[],unmatchedTsoft=[],unmatchedAide=[]}={},opts={}){
+      // Compel unmatched kapat
+      const secOld=$('unmatchedSection'); secOld && (secOld.style.display='none');
+      const t2=$('t2'); t2 && (t2.innerHTML='');
+
+      // Ana tablo
+      const COLS_ALL=[
+        "Sıra","Marka",
+        "Ürün Kodu (T-Soft)","Ürün Adı (T-Soft)",
+        "Ürün Kodu (Aide)","Ürün Adı (Aide)",
+        "Stok (T-Soft)","Stok (Aide)"
+      ];
+      const SEP_LEFT=new Set(["Ürün Kodu (T-Soft)","Ürün Kodu (Aide)"]);
+      const tightCol=c=>(c==="Sıra"||c==="Marka"||c==="Ürün Kodu (T-Soft)"||c==="Ürün Kodu (Aide)"||c==="Stok (T-Soft)"||c==="Stok (Aide)");
+      const W=[6,12,14,22,14,22,5,5]; // toplam 100
+
+      const head=COLS_ALL.map(c=>{
+        const cls=[SEP_LEFT.has(c)?'sepL':'',tightCol(c)?'tightCol':''].filter(Boolean).join(' ');
+        return `<th class="${cls}" title="${esc(c)}"><span class="hTxt">${fmtHdr(c)}</span></th>`
+      }).join('');
+
+      const body=(rows||[]).map((r,i)=>{
+        const trCls=[r?._pulse?'stockPulse':''].filter(Boolean).join(' ');
+        const tNameCls=r?._tpassive?'tsoftPassive':'';
+        return `<tr class="${esc(trCls)}">
+          <td class="seqCell tightCol" title="${esc(String(i+1))}"><span class="cellTxt">${esc(String(i+1))}</span></td>
+          <td class="tightCol" title="${esc(r["Marka"]||'')}"><span class="cellTxt">${esc(r["Marka"]||'')}</span></td>
+
+          <td class="tightCol sepL" title="${esc(r["Ürün Kodu (T-Soft)"]||'')}"><span class="cellTxt">${esc(r["Ürün Kodu (T-Soft)"]||'')}</span></td>
+          <td class="left nameCell"><span class="nm ${tNameCls}" title="${esc(r["Ürün Adı (T-Soft)"]||'')}">${esc(r["Ürün Adı (T-Soft)"]||'')}</span></td>
+
+          <td class="tightCol sepL" title="${esc(r["Ürün Kodu (Aide)"]||'')}"><span class="cellTxt">${esc(r["Ürün Kodu (Aide)"]||'')}</span></td>
+          <td class="left nameCell"><span class="nm" title="${esc(r["Ürün Adı (Aide)"]||'')}">${esc(r["Ürün Adı (Aide)"]||'')}</span></td>
+
+          <td class="tightCol" title="${esc(fmtStockSimple(r["Stok (T-Soft)"]))}"><span class="cellTxt">${esc(fmtStockSimple(r["Stok (T-Soft)"]))}</span></td>
+          <td class="tightCol" title="${esc(fmtStockSimple(r["Stok (Aide)"]))}"><span class="cellTxt">${esc(fmtStockSimple(r["Stok (Aide)"]))}</span></td>
         </tr>`
       }).join('');
 
-      $('t2').innerHTML=colGrp(W2)+`<thead><tr>${head2}</tr></thead><tbody>${body2}</tbody>`
-    }
+      $('t1').innerHTML=colGrp(W)+`<thead><tr>${head}</tr></thead><tbody>${body}</tbody>`;
 
-    const matched=(R||[]).filter(x=>x._m).length;
-    ui?.setChip?.('sum',`✓${matched} • ✕${(R||[]).length-matched}`,'muted');
-    const dl1=$('dl1');dl1&&(dl1.disabled=!(R||[]).length);
-    enforceSticky();sched()
-  }}
+      // Split unmatched
+      const splitSec=$('unmatchedSplitSection');
+      const title=$('unmatchedSplitTitle');
+      title && (title.textContent='Eşleşmeyen Ürünler');
+
+      const hasUnm = (unmatchedTsoft?.length||0) + (unmatchedAide?.length||0);
+      if(!hasUnm){
+        splitSec && (splitSec.style.display='none');
+        $('t2L') && ($('t2L').innerHTML='');
+        $('t2R') && ($('t2R').innerHTML='');
+      }else{
+        splitSec && (splitSec.style.display='');
+        const colsU=["Sıra","Marka","Ürün Kodu","Ürün Adı","Stok"];
+        const WU=[8,18,18,44,12];
+
+        const mkTable=(id,arr,label)=>{
+          const headU=colsU.map((c,ix)=>{
+            const cls=[(c==="Ürün Kodu")?'sepL':'',(c==="Sıra"||c==="Marka"||c==="Ürün Kodu"||c==="Stok")?'tightCol':''].filter(Boolean).join(' ');
+            return `<th class="${cls}" title="${esc(label+' • '+c)}"><span class="hTxt">${fmtHdr(c)}</span></th>`
+          }).join('');
+          const bodyU=(arr||[]).map((r,i)=>`<tr>
+            <td class="seqCell tightCol" title="${esc(String(i+1))}"><span class="cellTxt">${esc(String(i+1))}</span></td>
+            <td class="tightCol" title="${esc(r["Marka"]||'')}"><span class="cellTxt">${esc(r["Marka"]||'')}</span></td>
+            <td class="tightCol sepL" title="${esc(r["Ürün Kodu"]||'')}"><span class="cellTxt">${esc(r["Ürün Kodu"]||'')}</span></td>
+            <td class="left nameCell"><span class="nm" title="${esc(r["Ürün Adı"]||'')}">${esc(r["Ürün Adı"]||'')}</span></td>
+            <td class="tightCol" title="${esc(fmtStockSimple(r["Stok"]))}"><span class="cellTxt">${esc(fmtStockSimple(r["Stok"]))}</span></td>
+          </tr>`).join('');
+          $(id).innerHTML=colGrp(WU)+`<thead><tr>${headU}</tr></thead><tbody>${bodyU}</tbody>`;
+        };
+
+        mkTable('t2L',unmatchedTsoft,'T-Soft');
+        mkTable('t2R',unmatchedAide,'Aide');
+      }
+
+      // chips
+      const matchedCount=(rows||[]).filter(r=>r?._m).length;
+      const total=(rows||[]).length;
+      ui?.setChip?.('sum',`✓${matchedCount} • ✕${total-matchedCount}`,'muted');
+
+      // csv butonu: bu modda da aç
+      const dl1=$('dl1'); dl1 && (dl1.disabled=!total);
+
+      enforceSticky();sched()
+    }
+  }
 }
