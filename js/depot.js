@@ -76,6 +76,50 @@ export function createDepot({ui,onDepotLoaded,normBrand}={}){
     return {num:sum,raw:String(sum)}
   };
 
+  // ✅ Tüm Markalar modu: marka+kod bazlı stok toplanmış map
+  function getBrandItemMap(){
+    const out=new Map(); // brNorm -> Map(codeNorm -> {code,name,num})
+    if(!depotReady||!L4.length||!C4.stokKodu)return out;
+
+    for(const r of L4){
+      const brRaw=T(C4.marka?(r[C4.marka]??''):(r["Marka"]??''));
+      if(isBadBrand(brRaw))continue;
+      const brNorm=brandNormFn(brRaw);if(!brNorm)continue;
+
+      const code=depotCodeNorm(r[C4.stokKodu]??''); if(!code) continue;
+      const name=pickAideName(r)||'';
+      const num=depotStockNum(r[C4.stok]??'');
+
+      out.has(brNorm)||out.set(brNorm,new Map());
+      const m=out.get(brNorm);
+
+      // alt kodları birleştir: 000123 == 123
+      const alt=depotCodeAlt(code);
+      const key = alt||code;
+
+      if(!m.has(key)){
+        m.set(key,{code:key,name, num:num});
+      }else{
+        const it=m.get(key);
+        it.num=(Number(it.num)||0)+num;
+        // isim boşsa güncelle
+        if(!it.name && name) it.name=name;
+      }
+    }
+    return out
+  }
+
+  function getBrandsNormSet(){
+    const s=new Set();
+    if(!depotReady||!L4.length) return s;
+    for(const r of L4){
+      const brRaw=T(C4.marka?(r[C4.marka]??''):(r["Marka"]??''));
+      if(isBadBrand(brRaw))continue;
+      const brNorm=brandNormFn(brRaw); brNorm && s.add(brNorm);
+    }
+    return s
+  }
+
   function unmatchedRows({brandsNormSet,tsoftSupByBrand}={}){
     if(!depotReady)return [];
     const bnSet=(brandsNormSet instanceof Set)?brandsNormSet:null;
@@ -92,13 +136,12 @@ export function createDepot({ui,onDepotLoaded,normBrand}={}){
         const k=(brNorm+'||'+nm).toLocaleLowerCase(TR).replace(/\s+/g,' ').trim();
         if(!k||seen.has(k))continue;seen.add(k);
         const ag=depotAgg(it.code);
-        // ✅ Aide eşleşmeyende ürün kodunu da taşıyoruz
         out.push({
           _type:'depo',
           _bn:brNorm,
           "Marka":brandLabelByNorm.get(brNorm)||brNorm,
           "Depo Ürün Adı":nm,
-          "Aide Ürün Kodu":it.code,           // ✅ NEW
+          "Aide Ürün Kodu":it.code,
           _dnum:ag?.num??0
         })
       }
@@ -241,6 +284,10 @@ export function createDepot({ui,onDepotLoaded,normBrand}={}){
     count:()=>L4.length,
     unmatchedRows,
     loadText:(text)=>loadDepotFromText(text),
-    getLastRaw:()=>lastRawText
+    getLastRaw:()=>lastRawText,
+
+    // ✅ new (Tüm Markalar modu için)
+    getBrandItemMap,
+    getBrandsNormSet
   }
 }
